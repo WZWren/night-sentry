@@ -15,7 +15,7 @@ const AuthContext = createContext({});
 export function AuthProvider({ children }) {
     const segments = useSegments();
     const router = useRouter();
-    const [loggedIn, setLoggedIn] = useState(null);
+    const [loggedIn, setLoggedIn] = useState(auth.currentUser);
     console.log("AuthProvider loading...");
 
     // this sets up the useEffect hooks to redirect users to the correct page.

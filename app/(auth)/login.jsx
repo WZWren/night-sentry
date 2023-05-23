@@ -4,6 +4,7 @@ import { Text, TextInput, Button, ActivityIndicator } from "react-native-paper";
 import { auth } from "../../lib/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
+// TODO: Detach style elements from text input.
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -11,8 +12,10 @@ export default function LoginPage() {
     const handleSubmit = async () => {
         signInWithEmailAndPassword(auth, email, password)
             .then((credentials) => {
+                // we have nothing to handle here for now.
                 console.log("Login Successful.");
             }).catch((error) => {
+                // TODO: Link error message to Login UI elements
                 console.log("Error: " + error.message);
             })
     }
