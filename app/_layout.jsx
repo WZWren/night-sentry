@@ -6,7 +6,7 @@ export default function RootLayout() {
     console.log("Root Layout loading...");
     return (
         <SafeAreaProvider>
-            <SafeAreaView>
+            <SafeAreaView style={{flex: 1, justifyContent: 'center'}}>
                 <AuthProvider>
                     <Slot />
                 </AuthProvider>
