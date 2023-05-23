@@ -2,13 +2,14 @@ import { useState } from "react";
 import { View } from "react-native";
 import { Text, TextInput, Button, ActivityIndicator, Snackbar } from "react-native-paper";
 import { auth } from "../../lib/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { Link } from "expo-router";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { useRouter } from "expo-router";
 
-// TODO: Detach style elements from text input.
-export default function LoginPage() {
+export default function Register() {
+    const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [verify, setVerify] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
 
     // we can use errorMsg as a true/false check, as "" is falsey in JS.
@@ -17,15 +18,31 @@ export default function LoginPage() {
     }
 
     const handleSubmit = async () => {
-        signInWithEmailAndPassword(auth, email, password)
+        if (email == "") {
+            setErrorMsg("Email field cannot be empty.");
+            return;
+        }
+        if (password == "" || verify == "") {
+            setErrorMsg("Password fields cannot be empty.");
+            return;
+        }
+        if (password != verify) {
+            setErrorMsg("Passwords must match!");
+            return;
+        }
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((success) => {
+                // Firebase automatically logs you in after a signup.
+                console.log("Sign-up successful!");
+            })
             .catch((error) => {
                 setErrorMsg("Error: " + error.message);
             })
     }
-
+    
     return (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-            <Text style={{ fontSize: 20 }}>Login to your account:</Text>
+            <Text style={{ fontSize: 20 }}>Sign-up for an account:</Text>
             <TextInput
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -43,11 +60,16 @@ export default function LoginPage() {
                 onChangeText={setPassword}
                 placeholder="Password"
                 style={{ width: '80%' }}/>
-            <Button onPress={handleSubmit}>Login</Button>
-            <View style={{ flexDirection: "row", gap: 10 }}>
-                <Text>Don't have an account?</Text>
-                <Link href="/register" style={{ color: "#00004D" }}>Sign up</Link>
-            </View>
+            <TextInput
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                textContentType="password"
+                value={verify}
+                onChangeText={setVerify}
+                placeholder="Re-enter Password"
+                style={{ width: '80%' }}/>
+            <Button onPress={handleSubmit}>Sign-up</Button>
             <Snackbar
                 visible={errorMsg}
                 onDismiss={handleDismiss}
