@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { View } from "react-native";
-import { Text, TextInput, Button, ActivityIndicator } from "react-native-paper";
+import { Text, TextInput, Button, ActivityIndicator, Snackbar } from "react-native-paper";
 import { auth } from "../../lib/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
@@ -8,15 +8,17 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [errorMsg, setErrorMsg] = useState('');
+
+    // we can use errorMsg as a true/false check, as "" is falsey in JS.
+    const handleDismiss = () => {
+        setErrorMsg("");
+    }
 
     const handleSubmit = async () => {
         signInWithEmailAndPassword(auth, email, password)
-            .then((credentials) => {
-                // we have nothing to handle here for now.
-                console.log("Login Successful.");
-            }).catch((error) => {
-                // TODO: Link error message to Login UI elements
-                console.log("Error: " + error.message);
+            .catch((error) => {
+                setErrorMsg("Error: " + error.message);
             })
     }
 
@@ -42,6 +44,15 @@ export default function LoginPage() {
                 placeholder="Password"
                 style={{ width: '80%' }}/>
             <Button onPress={handleSubmit}>Login</Button>
+            <Snackbar
+                visible={errorMsg}
+                onDismiss={handleDismiss}
+                action={{
+                    label: 'Dismiss',
+                    onPress: handleDismiss,
+                }}>
+                    {errorMsg}
+            </Snackbar>
         </View>
     );
 }
