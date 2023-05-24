@@ -4,8 +4,8 @@ import { Text, TextInput, Button, ActivityIndicator, Snackbar } from "react-nati
 import { auth } from "../../lib/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { Link } from "expo-router";
+import { authStyles } from "./style";
 
-// TODO: Detach style elements from text input.
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -16,6 +16,7 @@ export default function LoginPage() {
         setErrorMsg("");
     }
 
+    // handles the submission of email and password to the firebase client.
     const handleSubmit = async () => {
         signInWithEmailAndPassword(auth, email, password)
             .catch((error) => {
@@ -23,9 +24,10 @@ export default function LoginPage() {
             })
     }
 
+    // we do not abstract the text input elements as they are only used 2 times in this instance.
     return (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-            <Text style={{ fontSize: 20 }}>Login to your account:</Text>
+        <View style={ authStyles.colContainer }>
+            <Text variant="headlineLarge">Log in...</Text>
             <TextInput
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -43,10 +45,10 @@ export default function LoginPage() {
                 onChangeText={setPassword}
                 placeholder="Password"
                 style={{ width: '80%' }}/>
-            <Button onPress={handleSubmit}>Login</Button>
-            <View style={{ flexDirection: "row", gap: 10 }}>
-                <Text>Don't have an account?</Text>
-                <Link href="/register" style={{ color: "#00004D" }}>Sign up</Link>
+            <Button onPress={handleSubmit} labelStyle={ authStyles.textStandard }>Login</Button>
+            <View style={ authStyles.rowContainer }>
+                <Text style={ authStyles.textStandard }>Don't have an account?</Text>
+                <Link href="/register" style={ authStyles.textLink }>Sign up</Link>
             </View>
             <Snackbar
                 visible={errorMsg}

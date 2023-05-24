@@ -3,10 +3,9 @@ import { View } from "react-native";
 import { Text, TextInput, Button, ActivityIndicator, Snackbar } from "react-native-paper";
 import { auth } from "../../lib/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { useRouter } from "expo-router";
+import { authStyles } from "./style";
 
 export default function Register() {
-    const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [verify, setVerify] = useState('');
@@ -17,6 +16,8 @@ export default function Register() {
         setErrorMsg("");
     }
 
+    // handles sign-in submission to firebase - includes a password confirmation
+    // check as well
     const handleSubmit = async () => {
         if (email == "") {
             setErrorMsg("Email field cannot be empty.");
@@ -41,35 +42,35 @@ export default function Register() {
     }
     
     return (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-            <Text style={{ fontSize: 20 }}>Sign-up for an account:</Text>
+        <View style={ authStyles.colContainer }>
+            <Text variant="headlineLarge">Sign-up...</Text>
             <TextInput
+                placeholder="Email"
                 autoCapitalize="none"
                 autoCorrect={false}
                 textContentType="emailAddress"
                 value={email}
                 onChangeText={setEmail}
-                placeholder="Email"
                 style={{ width: '80%' }} />
             <TextInput
+                placeholder="Password"
                 secureTextEntry
                 autoCapitalize="none"
                 autoCorrect={false}
                 textContentType="password"
                 value={password}
                 onChangeText={setPassword}
-                placeholder="Password"
                 style={{ width: '80%' }}/>
             <TextInput
+                placeholder="Re-enter Password"
                 secureTextEntry
                 autoCapitalize="none"
                 autoCorrect={false}
                 textContentType="password"
                 value={verify}
                 onChangeText={setVerify}
-                placeholder="Re-enter Password"
                 style={{ width: '80%' }}/>
-            <Button onPress={handleSubmit}>Sign-up</Button>
+            <Button onPress={handleSubmit} labelStyle={ authStyles.textStandard }>Sign-up</Button>
             <Snackbar
                 visible={errorMsg}
                 onDismiss={handleDismiss}
