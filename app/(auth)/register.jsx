@@ -8,6 +8,8 @@ export default function Register() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [verify, setVerify] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
 
     // we can use errorMsg as a true/false check, as "" is falsey in JS.
@@ -16,12 +18,8 @@ export default function Register() {
     }
 
     const handleSubmit = async () => {
-        if (email == "") {
-            setErrorMsg("Email field cannot be empty.");
-            return;
-        }
-        if (password == "" || verify == "") {
-            setErrorMsg("Password fields cannot be empty.");
+        if (email == "" || password == "" || verify == "" || firstName == "" || lastName == "") {
+            setErrorMsg("Fields cannot be empty.");
             return;
         }
         if (password != verify) {
@@ -29,10 +27,19 @@ export default function Register() {
             return;
         }
         // see comments at login to see differences from firebase
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) {
             setErrorMsg(error.message);
             return;
+        } else {
+            // otherwise the signup was successful.
+            const { error } = await supabase.from("user_info").insert({
+                id: data.user.id,
+                first_name: firstName,
+                last_name: lastName,
+                close_contact: [],
+            });
+            console.log(error ? error.message : "Insertion successful.");
         }
     }
     
@@ -47,6 +54,22 @@ export default function Register() {
                 value={email}
                 onChangeText={setEmail}
                 style={{ width: '80%' }} />
+            <View style={ styles.rowView }>
+                <TextInput
+                    placeholder="First Name"
+                    textContentType="namePrefix"
+                    value={firstName}
+                    onChangeText={setFirstName}
+                    style={{ width: '40%' }}
+                    />
+                <TextInput
+                    placeholder="Last Name"
+                    textContentType="nameSuffix"
+                    value={lastName}
+                    onChangeText={setLastName}
+                    style={{ width: '40%' }}
+                    />
+            </View>
             <TextInput
                 placeholder="Password"
                 secureTextEntry
