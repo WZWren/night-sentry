@@ -30,10 +30,17 @@ export default function DrawerRoot() {
                 headerRight: () => DrawerToggle({toggleDrawer, setToggleDrawer}),
             }}>
             <Drawer.Screen
+                name="alert"
+                options={{
+                    drawerLabel: "Alert Dashboard",
+                    title: "Distress Signal",
+                    swipeEnabled: !toggleDrawer
+                }}/>
+            <Drawer.Screen
                 name="main"
                 options={{
-                    drawerLabel: "Dashboard",
-                    title: "Welcome",
+                    drawerLabel: "User Settings",
+                    title: "User Profile",
                     swipeEnabled: !toggleDrawer
                 }}/>
         </Drawer>
