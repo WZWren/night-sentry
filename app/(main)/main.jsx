@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { Text, Button } from "react-native-paper";
-import { auth } from "../lib/firebase";
+import { auth } from "../../lib/firebase";
 import { signOut } from "firebase/auth";
 
 const handleSignout = async () => {
@@ -17,7 +17,7 @@ export default function HomeScreen() {
 
     return (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-            <Text>You should not see this.</Text>
+            <Text>You should actually see this now :D</Text>
             <Button onPress={ handleSignout }>Sign Out</Button>
         </View>
     );

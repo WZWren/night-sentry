@@ -33,8 +33,8 @@ export function AuthProvider({ children }) {
             console.log("Routing to Login...");
             router.replace("/login");
         } else if (loggedIn && inAuthGroup) {
-            console.log("Routing to Root...");
-            router.replace("/");
+            console.log("Routing to Main...");
+            router.replace("/main");
         }
     }, [loggedIn]);
 
