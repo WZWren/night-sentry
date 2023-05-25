@@ -1,10 +1,9 @@
 import { View } from 'react-native';
 import { Text, Button } from "react-native-paper";
-import { auth } from "../lib/firebase";
-import { signOut } from "firebase/auth";
+import { supabase } from "../lib/supabase";
 
 const handleSignout = async () => {
-    signOut(auth)
+    supabase.auth.signOut()
         .then((success) => {
             console.log("Logout successful.")
         }).catch((error) => {

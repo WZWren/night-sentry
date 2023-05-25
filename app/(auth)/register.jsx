@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { View } from "react-native";
 import { Text, TextInput, Button, ActivityIndicator, Snackbar } from "react-native-paper";
-import { auth } from "../../lib/firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { supabase } from "../../lib/supabase";
 import { styles } from "../../lib/style";
 
 export default function Register() {
@@ -16,8 +15,6 @@ export default function Register() {
         setErrorMsg("");
     }
 
-    // handles sign-in submission to firebase - includes a password confirmation
-    // check as well
     const handleSubmit = async () => {
         if (email == "") {
             setErrorMsg("Email field cannot be empty.");
@@ -31,14 +28,12 @@ export default function Register() {
             setErrorMsg("Passwords must match!");
             return;
         }
-        createUserWithEmailAndPassword(auth, email, password)
-            .then((success) => {
-                // Firebase automatically logs you in after a signup.
-                console.log("Sign-up successful!");
-            })
-            .catch((error) => {
-                setErrorMsg("Error: " + error.message);
-            })
+        // see comments at login to see differences from firebase
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) {
+            setErrorMsg(error.message);
+            return;
+        }
     }
     
     return (

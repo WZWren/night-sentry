@@ -1,28 +1,13 @@
 import { useRouter, useSegments } from "expo-router";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth } from "../lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { supabase } from "../lib/supabase";
 
 const AuthContext = createContext({});
 
-/**
- * Parent component that provides the user value as part of its context.
- * 
- * @param {*} children - The Child Components of the AuthProvider
- * @returns The AuthContext.Provider component, encapsulating the user value.
- */
-export function AuthProvider({ children }) {
+function useProtectedRoute(loggedIn) {
     const segments = useSegments();
     const router = useRouter();
-    const [loggedIn, setLoggedIn] = useState(auth.currentUser);
-    console.log("AuthProvider loading...");
-
-    // this sets up the useEffect hooks to redirect users to the correct page.
-    onAuthStateChanged(auth, (user) => {
-        console.log("User changed! " + user);
-        setLoggedIn(user);
-    });
 
     useEffect(() => {
         console.log("Entering protected route...");
@@ -36,7 +21,33 @@ export function AuthProvider({ children }) {
             console.log("Routing to Alert...");
             router.replace("/alert");
         }
-    }, [loggedIn]);
+    }, [loggedIn, segments, router]);
+}
+
+/**
+ * Parent component that provides the user value as part of its context.
+ * 
+ * @param {*} children - The Child Components of the AuthProvider
+ * @returns The AuthContext.Provider component, encapsulating the user value.
+ */
+export function AuthProvider({ children }) {
+    const [loggedIn, setLoggedIn] = useState(null);
+    console.log("AuthProvider loading...");
+
+    useProtectedRoute(loggedIn);
+
+    // this sets up the useEffect hooks to redirect users to the correct page.
+    useEffect(() => {
+        const { data } = supabase.auth.onAuthStateChange((event, session) => {
+            console.log("User changed! " + event);
+            if (event === "SIGNED_IN") {
+                setLoggedIn(session.user);
+            } else if (event === "SIGNED_OUT") {
+                setLoggedIn(null);
+            }
+        })
+        return () => data.subscription.unsubscribe();
+    }, []);
 
     return (
         <AuthContext.Provider value={{ loggedIn }}>{ children }</AuthContext.Provider>

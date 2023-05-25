@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { View } from "react-native";
 import { Text, TextInput, Button, ActivityIndicator, Snackbar } from "react-native-paper";
-import { auth } from "../../lib/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { supabase } from "../../lib/supabase";
 import { Link } from "expo-router";
 import { styles } from "../../lib/style";
 
@@ -18,10 +17,22 @@ export default function LoginPage() {
 
     // handles the submission of email and password to the firebase client.
     const handleSubmit = async () => {
-        signInWithEmailAndPassword(auth, email, password)
-            .catch((error) => {
-                setErrorMsg("Error: " + error.message);
-            })
+        if (email == "") {
+            setErrorMsg("Email field cannot be empty.");
+            return;
+        }
+        if (password == "") {
+            setErrorMsg("Password field cannot be empty.");
+            return;
+        }
+        // supabase differs from firebase in that the promise returns the error, bundled in the response.
+        // therefore, to get the actual error, you need to extract it directly and handle explicitly, or
+        // handle the error in the then block.
+        const { error } = await supabase.auth.signInWithPassword({email, password});
+        if (error) {
+            setErrorMsg(error.message);
+            return;
+        }
     }
 
     // we do not abstract the text input elements as they are only used 2 times in this instance.
