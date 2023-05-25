@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { Text, TextInput, Button, ActivityIndicator, Snackbar } from "react-native-paper";
 import { auth } from "../../lib/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { authStyles } from "./style";
+import { styles } from "../../lib/style";
 
 export default function Register() {
     const [email, setEmail] = useState('');
@@ -42,7 +42,7 @@ export default function Register() {
     }
     
     return (
-        <View style={ authStyles.colContainer }>
+        <View style={ styles.colContainer }>
             <Text variant="headlineLarge">Sign-up...</Text>
             <TextInput
                 placeholder="Email"
@@ -70,7 +70,7 @@ export default function Register() {
                 value={verify}
                 onChangeText={setVerify}
                 style={{ width: '80%' }}/>
-            <Button onPress={handleSubmit} labelStyle={ authStyles.textStandard }>Sign-up</Button>
+            <Button onPress={handleSubmit} labelStyle={ styles.textStandard }>Sign-up</Button>
             <Snackbar
                 visible={errorMsg}
                 onDismiss={handleDismiss}
