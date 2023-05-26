@@ -37,6 +37,7 @@ export default function Register() {
                 id: data.user.id,
                 first_name: firstName,
                 last_name: lastName,
+                email: data.user.email,
             });
             console.log(error ? error.message : "Insertion successful.");
         }

@@ -1,9 +1,10 @@
 import { View, FlatList } from 'react-native';
-import { Text, Button, Card, FAB, IconButton } from "react-native-paper";
+import { Text, Button, Card, FAB, IconButton, Portal, Dialog, PaperProvider } from "react-native-paper";
 import { supabase } from "../../lib/supabase";
 import { useState, useEffect } from 'react';
 import { styles } from '../../lib/style';
 import { useAuth } from '../../contexts/auth'; 
+import { CCDialog } from './ccdialog';
 
 const handleSignout = async () => {
     supabase.auth.signOut()
@@ -12,6 +13,20 @@ const handleSignout = async () => {
         }).catch((error) => {
             console.log("Error: " + error.message)
         });
+}
+
+async function fetchSubscriber(setArray, setRefresh, user, confirm) {
+    const { data, error } = await supabase
+        .from("close_contacts")
+        .select("subscriber, name:subscriber(first_name, last_name)")
+        .eq("publisher", user.id)
+        .is("confirmed", confirm);
+    if (error) {
+        console.log(error.message);
+    } else {
+        setArray(data);
+    }
+    setRefresh(false);
 }
 
 function UserListArea({ name, refresh, children }) {
@@ -49,38 +64,24 @@ function PendingListItem({ item }) {
     );
 }
 
-async function fetchSubscriber(setArray, setRefresh, user, confirm) {
-    const { data, error } = await supabase
-        .from("close_contacts")
-        .select("subscriber, name:subscriber(first_name, last_name)")
-        .eq("publisher", user.id)
-        .is("confirmed", confirm);
-    if (error) {
-        console.log(error.message);
-    } else {
-        setArray(data);
-    }
-    setRefresh(false);
-}
-
 export default function HomeScreen() {
     const { loggedIn } = useAuth();
-    const [firstName, setFirstName] = useState('Placeholder');
-    const [lastName, setLastName] = useState('Placeholder');
+    const [name, setName] = useState('Placeholder');
     const [contact, setContact] = useState([]);
     const [pending, setPending] = useState([]);
     const [refreshContact, setRefreshContact] = useState(true);
     const [refreshPending, setRefreshPending] = useState(true);
+    const [dialog, setDialog] = useState(false);
+
     console.log("Index loading...");
 
     useEffect(() => {
         (async () => {
-            const { data, error } = await supabase.from("user_info").select("first_name, last_name");
+            const { data, error } = await supabase.from("user_info").select("first_name, last_name").eq("id", loggedIn.id);
             if (error) {
                 console.log(error.message);
             } else {
-                setFirstName(data[0].first_name);
-                setLastName(data[0].last_name);
+                setName(data[0].first_name + " " + data[0].last_name);
             }
         })();
     }, []);
@@ -98,29 +99,41 @@ export default function HomeScreen() {
     }, [refreshPending]);
 
     return (
-        <View style={styles.colContainerStart}>
-            <View style={styles.rowView}>
-                <Text variant="headlineSmall">Hello, {firstName} {lastName}</Text>
-                <Button onPress={ handleSignout } labelStyle={ styles.textStandard }>Sign Out</Button>
+        <PaperProvider>
+            <View style={styles.colContainerStart}>
+                <View style={styles.rowView}>
+                    <Text variant="headlineSmall">Hello, {name}</Text>
+                    <Button onPress={ handleSignout } labelStyle={ styles.textStandard }>Sign Out</Button>
+                </View>
+                <UserListArea name="Current Close Contacts" refresh={setRefreshContact}>
+                    { contact.length == 0
+                    ? <Text variant="headlineSmall">You have no close contacts...</Text>
+                    : <FlatList
+                        data={ contact }
+                        renderItem={ UserListItem }
+                        refreshing={ refreshContact } />
+                    }
+                </UserListArea>
+                <UserListArea name="Pending connections..." refresh={setRefreshPending}>
+                    { pending.length == 0
+                    ? <Text variant="headlineSmall">You have no pending connections.</Text>
+                    : <FlatList
+                        data={ pending }
+                        renderItem={ PendingListItem }
+                        refreshing={ refreshPending } />
+                    }
+                </UserListArea>
+                <FAB
+                    icon="plus"
+                    label="Add close contact"
+                    onPress={() => setDialog(true)}
+                    styles={{ 
+                        position: "absolute",
+                        margin: 16
+                    }}
+                />
             </View>
-            <UserListArea name="Current Close Contacts" refresh={setRefreshContact}>
-                { contact.length == 0
-                ? <Text variant="headlineSmall">You have no close contacts...</Text>
-                : <FlatList
-                    data={ contact }
-                    renderItem={ UserListItem }
-                    refreshing={ refreshContact } />
-                }
-            </UserListArea>
-            <UserListArea name="Pending connections..." refresh={setRefreshPending}>
-                { pending.length == 0
-                ? <Text variant="headlineSmall">You have no pending connections.</Text>
-                : <FlatList
-                    data={ pending }
-                    renderItem={ PendingListItem }
-                    refreshing={ refreshPending } />
-                }
-            </UserListArea>
-        </View>
+            <CCDialog visible={dialog} setVisible={setDialog} />
+        </PaperProvider>
     );
 }
