@@ -5,6 +5,10 @@ import { supabase } from "../lib/supabase";
 
 const AuthContext = createContext({});
 
+export function useAuth() {
+    return useContext(AuthContext);
+}
+
 function useProtectedRoute(loggedIn) {
     const segments = useSegments();
     const router = useRouter();
