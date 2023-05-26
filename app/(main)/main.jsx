@@ -1,10 +1,11 @@
 import { View, FlatList } from 'react-native';
-import { Text, Button, Card, FAB, IconButton, Portal, Dialog, PaperProvider } from "react-native-paper";
+import { Text, Button, FAB, PaperProvider } from "react-native-paper";
 import { supabase } from "../../lib/supabase";
 import { useState, useEffect } from 'react';
 import { styles } from '../../lib/style';
 import { useAuth } from '../../contexts/auth'; 
 import { CCDialog } from './ccdialog';
+import { PendingListItem, UserListItem, UserListArea } from './userlist';
 
 const handleSignout = async () => {
     supabase.auth.signOut()
@@ -27,41 +28,6 @@ async function fetchSubscriber(setArray, setRefresh, user, confirm) {
         setArray(data);
     }
     setRefresh(false);
-}
-
-function UserListArea({ name, refresh, children }) {
-    return(
-        <View style={{ width: "80%", height: "40%", gap: 5 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <Text variant="titleLarge">{name}</Text>
-                <IconButton icon="reload" size={16} onPress={refresh} mode="outlined"/>
-            </View>
-            { children }
-        </View>
-    );
-}
-
-function UserListItem({ item }) {
-    return (
-        <Card mode="outlined">
-            <Card.Title
-                title={item.name.first_name + " " + item.name.last_name}
-                subtitle="This is where you would show the last alert."/>
-        </Card>
-    );
-}
-
-function PendingListItem({ item }) {
-    return (
-        <Card mode="outlined">
-            <Card.Title
-                title={item.name.first_name + " " + item.name.last_name}/>
-            <Card.Actions>
-                <IconButton icon="check" mode="outlined"/>
-                <IconButton icon="close" mode="outlined"/>
-            </Card.Actions>
-        </Card>
-    );
 }
 
 export default function HomeScreen() {
@@ -119,7 +85,7 @@ export default function HomeScreen() {
                     ? <Text variant="headlineSmall">You have no pending connections.</Text>
                     : <FlatList
                         data={ pending }
-                        renderItem={ PendingListItem }
+                        renderItem={ ({ item }) => PendingListItem({ item }, loggedIn, setRefreshContact, setRefreshPending) }
                         refreshing={ refreshPending } />
                     }
                 </UserListArea>
