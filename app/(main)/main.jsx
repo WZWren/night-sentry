@@ -1,20 +1,11 @@
 import { View, FlatList } from 'react-native';
-import { Text, Button, FAB, PaperProvider } from "react-native-paper";
+import { Text, Button, FAB, PaperProvider, ActivityIndicator } from "react-native-paper";
 import { supabase } from "../../lib/supabase";
 import { useState, useEffect } from 'react';
 import { styles } from '../../lib/style';
 import { useAuth } from '../../contexts/auth'; 
 import { CCDialog } from './ccdialog';
 import { PendingListItem, UserListItem, UserListArea } from './userlist';
-
-const handleSignout = async () => {
-    supabase.auth.signOut()
-        .then((success) => {
-            console.log("Logout successful.")
-        }).catch((error) => {
-            console.log("Error: " + error.message)
-        });
-}
 
 async function fetchSubscriber(setArray, setRefresh, user, confirm) {
     const { data, error } = await supabase
@@ -32,12 +23,14 @@ async function fetchSubscriber(setArray, setRefresh, user, confirm) {
 
 export default function HomeScreen() {
     const { loggedIn } = useAuth();
-    const [name, setName] = useState('Placeholder');
-    const [contact, setContact] = useState([]);
-    const [pending, setPending] = useState([]);
-    const [refreshContact, setRefreshContact] = useState(true);
-    const [refreshPending, setRefreshPending] = useState(true);
-    const [dialog, setDialog] = useState(false);
+    const [ name, setName ] = useState('Placeholder');
+    const [ contact, setContact ] = useState([]);
+    const [ pending, setPending ] = useState([]);
+    const [ refreshName, setRefreshName ] = useState(true);
+    const [ refreshContact, setRefreshContact ] = useState(true);
+    const [ refreshPending, setRefreshPending ] = useState(true);
+    const [ loadingSignout, setLoadingSignout ] = useState(false);
+    const [ dialog, setDialog ] = useState(false);
 
     console.log("Index loading...");
 
@@ -48,6 +41,7 @@ export default function HomeScreen() {
                 console.log(error.message);
             } else {
                 setName(data[0].first_name + " " + data[0].last_name);
+                setRefreshName(false);
             }
         })();
     }, []);
@@ -64,14 +58,27 @@ export default function HomeScreen() {
         }
     }, [refreshPending]);
 
+    
+    const handleSignout = async () => {
+        setLoadingSignout(true);
+        supabase.auth.signOut()
+            .then((success) => {
+                console.log("Logout successful.");
+            }).catch((error) => {
+                console.log("Error: " + error.message);
+            });
+        setLoadingSignout(false);
+    }
+
     return (
         <PaperProvider>
             <View style={styles.colContainerStart}>
                 <View style={styles.rowView}>
-                    <Text variant="headlineSmall">Hello, {name}</Text>
-                    <Button onPress={ handleSignout } labelStyle={ styles.textStandard }>Sign Out</Button>
+                    {!refreshName && <Text variant="headlineSmall">Hello, {name}</Text>}
+                    {(refreshName || loadingSignout) && <ActivityIndicator/>}
+                    {!loadingSignout && <Button onPress={ handleSignout } labelStyle={ styles.textStandard }>Sign Out</Button>}
                 </View>
-                <UserListArea name="Current Close Contacts" refresh={setRefreshContact}>
+                <UserListArea name="Current Close Contacts" setRefresh={setRefreshContact} refresh={refreshContact}>
                     { contact.length == 0
                     ? <Text variant="headlineSmall">You have no close contacts...</Text>
                     : <FlatList
@@ -80,7 +87,7 @@ export default function HomeScreen() {
                         refreshing={ refreshContact } />
                     }
                 </UserListArea>
-                <UserListArea name="Pending connections..." refresh={setRefreshPending}>
+                <UserListArea name="Pending connections..." setRefresh={setRefreshPending} refresh={refreshPending}>
                     { pending.length == 0
                     ? <Text variant="headlineSmall">You have no pending connections.</Text>
                     : <FlatList

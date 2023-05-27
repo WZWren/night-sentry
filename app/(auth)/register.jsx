@@ -11,6 +11,7 @@ export default function Register() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
+    const [loading, setLoading] = useState(false);
 
     // we can use errorMsg as a true/false check, as "" is falsey in JS.
     const handleDismiss = () => {
@@ -27,7 +28,9 @@ export default function Register() {
             return;
         }
         // see comments at login to see differences from firebase
+        setLoading(true);
         const { data, error } = await supabase.auth.signUp({ email, password });
+        setLoading(false);
         if (error) {
             setErrorMsg(error.message);
             return;
@@ -88,7 +91,8 @@ export default function Register() {
                 value={verify}
                 onChangeText={setVerify}
                 style={{ width: '80%' }}/>
-            <Button onPress={handleSubmit} labelStyle={ styles.textStandard }>Sign-up</Button>
+            {!loading && <Button onPress={handleSubmit} labelStyle={ styles.textStandard }>Sign-up</Button>}
+            {loading && <ActivityIndicator size="small" style={{ marginTop: 4 }}/>}
             <Snackbar
                 visible={errorMsg}
                 onDismiss={handleDismiss}

@@ -1,15 +1,23 @@
 import { useState } from "react";
-import { Dialog, Portal, TextInput, Button } from "react-native-paper";
+import { Dialog, Portal, TextInput, Button, Text, ActivityIndicator } from "react-native-paper";
 import { useAuth } from "../../contexts/auth";
 import { supabase } from "../../lib/supabase";
+import { View } from "react-native";
 
-async function fetchEmail(user, email, setVisible) {
+async function fetchEmail(user, email, setVisible, setLoading, setError) {
+    if (email == "") {
+        setError("Fields should not be empty.");
+        return;
+    }
+    setLoading(true);
     const { data, error: emailError } = await supabase.from("user_info").select("id").eq("email", email);
     if (emailError) {
-        console.log(emailError.message);
+        setError(emailError.message);
+        setLoading(false);
         return;
     } else if (data.length <= 0) {
-        console.log("No such user found: " + data);
+        setError("No such user found!");
+        setLoading(false);
         return;
     }
 
@@ -19,14 +27,17 @@ async function fetchEmail(user, email, setVisible) {
         confirmed: false
     });
     if (insertError) {
-        console.log(insertError.message);
+        setError(insertError.message);
     }
+    setLoading(false);
     setVisible(false);
 }
 
 export function CCDialog({ visible, setVisible }) {
     const { loggedIn } = useAuth();
     const [ email, setEmail ] = useState("");
+    const [ loading, setLoading ] = useState(false);
+    const [ error, setError ] = useState("");
 
     return (
         <Portal>
@@ -39,10 +50,15 @@ export function CCDialog({ visible, setVisible }) {
                         autoCorrect={false}
                         textContentType="emailAddress"
                         value={email}
-                        onChangeText={setEmail} />
+                        onChangeText={setEmail}
+                        style={{ margin: 4 }}/>
+                    <View style={{ minHeight: 30, alignItems: "center"}}>
+                        {!loading && <Text variant="labelLarge">{error}</Text>}
+                        {loading && <ActivityIndicator/>}
+                    </View>
                 </Dialog.Content>
                 <Dialog.Actions>
-                    <Button onPress={() => fetchEmail(loggedIn, email, setVisible)}>Submit</Button>
+                    <Button onPress={() => fetchEmail(loggedIn, email, setVisible, setLoading, setError)}>Submit</Button>
                 </Dialog.Actions>
             </Dialog>
         </Portal>

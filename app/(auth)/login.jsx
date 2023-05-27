@@ -9,6 +9,7 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
+    const [loading, setLoading] = useState(false);
 
     // we can use errorMsg as a true/false check, as "" is falsey in JS.
     const handleDismiss = () => {
@@ -28,7 +29,9 @@ export default function LoginPage() {
         // supabase differs from firebase in that the promise returns the error, bundled in the response.
         // therefore, to get the actual error, you need to extract it directly and handle explicitly, or
         // handle the error in the then block.
+        setLoading(true);
         const { error } = await supabase.auth.signInWithPassword({email, password});
+        setLoading(false);
         if (error) {
             setErrorMsg(error.message);
             return;
@@ -56,7 +59,8 @@ export default function LoginPage() {
                 onChangeText={setPassword}
                 placeholder="Password"
                 style={{ width: '80%' }}/>
-            <Button onPress={handleSubmit} labelStyle={ styles.textStandard }>Login</Button>
+            {!loading && <Button onPress={handleSubmit} labelStyle={ styles.textStandard }>Login</Button>}
+            {loading && <ActivityIndicator size="small" style={{ marginTop: 4 }}/>}
             <View style={ styles.rowView }>
                 <Text style={ styles.textStandard }>Don't have an account?</Text>
                 <Link href="/register" style={ styles.textLink }>Sign up</Link>
