@@ -2,6 +2,8 @@ import { useRouter, useSegments } from "expo-router";
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import { fetchPublishers, unsubClient } from "./alert";
+import { Snackbar } from "react-native-paper";
 
 const AuthContext = createContext({});
 
@@ -36,9 +38,14 @@ function useProtectedRoute(loggedIn) {
  */
 export function AuthProvider({ children }) {
     const [loggedIn, setLoggedIn] = useState(null);
+    const [distress, setDistress] = useState("");
     console.log("AuthProvider loading...");
 
     useProtectedRoute(loggedIn);
+
+    const handleDismiss = () => {
+        setDistress("");
+    }
 
     // this sets up the useEffect hooks to redirect users to the correct page.
     useEffect(() => {
@@ -46,14 +53,24 @@ export function AuthProvider({ children }) {
             console.log("User changed! " + event);
             if (event === "SIGNED_IN") {
                 setLoggedIn(session.user);
+                fetchPublishers(session.user, setDistress);
             } else if (event === "SIGNED_OUT") {
                 setLoggedIn(null);
+                unsubClient();
             }
         })
         return () => data.subscription.unsubscribe();
     }, []);
 
     return (
-        <AuthContext.Provider value={{ loggedIn }}>{ children }</AuthContext.Provider>
+        <AuthContext.Provider value={{ loggedIn }}>
+            { children }
+            <Snackbar
+                visible={distress}
+                onDismiss={handleDismiss}
+                duration={10000}>
+                {distress}
+            </Snackbar>
+        </AuthContext.Provider>
     );
 }
