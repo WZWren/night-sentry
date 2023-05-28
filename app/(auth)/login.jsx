@@ -62,7 +62,7 @@ export default function LoginPage() {
             {!loading && <Button onPress={handleSubmit} labelStyle={ styles.textStandard }>Login</Button>}
             {loading && <ActivityIndicator size="small" style={{ marginTop: 4 }}/>}
             <View style={ styles.rowView }>
-                <Text style={ styles.textStandard }>Don't have an account?</Text>
+                <Text style={ styles.textStandard }>No account?</Text>
                 <Link href="/register" style={ styles.textLink }>Sign up</Link>
             </View>
             <Snackbar

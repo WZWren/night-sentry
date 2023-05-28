@@ -44,25 +44,25 @@ export default function HomeScreen() {
                 setRefreshName(false);
             }
         })();
-    }, []);
+    }, [loggedIn]);
 
     useEffect(() => {
         if (refreshContact) {
             fetchSubscriber(setContact, setRefreshContact, loggedIn, true);
         }
-    }, [refreshContact]);
+    }, [refreshContact, loggedIn]);
 
     useEffect(() => {
         if (refreshPending) {
             fetchSubscriber(setPending, setRefreshPending, loggedIn, false);
         }
-    }, [refreshPending]);
+    }, [refreshPending, loggedIn]);
 
     
     const handleSignout = async () => {
         setLoadingSignout(true);
         supabase.auth.signOut()
-            .then((success) => {
+            .then(() => {
                 console.log("Logout successful.");
             }).catch((error) => {
                 console.log("Error: " + error.message);
