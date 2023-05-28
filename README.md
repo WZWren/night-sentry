@@ -87,11 +87,10 @@ following them for an extended period.
 
 Flowchart
 
-![](README/media/image1.jpeg){width="6.268055555555556in"
-height="5.490972222222222in"}
+![](README/media/image1.jpeg)
 
 The Database we are using is hosted by supabase, comprising of 3 tables,
 not including the users table given by
 supabase.
-![](README/media/image2.jpeg){width="6.260416666666667in"
-height="3.84375in"}
+
+![](README/media/image2.jpeg)
