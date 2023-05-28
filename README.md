@@ -32,10 +32,19 @@ before they can receive alerts.
 close contacts. If they are active in the app, they will receive an
 alert on their phone.
 
+\- As an example: before leaving from home, a ward could register their
+guardians as close contacts. When returning home, the ward notices that
+someone is following them for an extended period of time.
+
+\- If they click on the distress button to send distress signal to
+emergency contacts, all the guardians would immediately receive this notice,
+and unambiguously know that their ward is in danger.
+
 To implement:
 
 \- Alerts will be broadcasted via push notifications and contain
-location data using Google Maps API.
+location data using Google Maps API. This will allow the contacts to
+act upon this notice, instead of just knowing that they are in danger.
 
 \- Should users opt in for it, these alerts will also be broadcast to
 nearby users on the app.
@@ -58,6 +67,10 @@ Crime Alert Page
 users of active crime alerts in the area, to warn users of previous
 crimes that might have happened in the area.
 
+\- For example, A user living in the neighbourhood could creates a
+post to share about his/her experience last night about a sighting
+of an arson seen nearby when he/she was on their way home.
+
 \- A live map linked to the Google Maps API will show where the active
 crime alerts are, and would also show where close contacts are sending
 their distress signals from.
@@ -66,24 +79,8 @@ their distress signals from.
 websites such as SPF to look at current and past active crimes in the
 area.
 
-User Stories
-
-Use Case 1: Post about Experience
-
-A user living in the neighbourhood creates a post to share about his/her
-experience last night about a sighting of an arson seen nearby when
-he/she was on their way home.
-
-Use Case 2: Read about Crime Hotspots
-
-A tourist peruses the posts by other users and notes down certain
-locations to avoid while on route to an unfamiliar area.
-
-Use Case 3: Send Distress Signal
-
-A user clicks on the distress button to send distress signal to
-emergency contacts and other users nearby after noticing someone
-following them for an extended period.
+\- Through this, we hope that people who peruse the posts by other users
+can note down locations to avoid while on route to an unfamiliar area.
 
 Flowchart
 
