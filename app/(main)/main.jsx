@@ -44,7 +44,7 @@ export default function HomeScreen() {
                 setRefreshName(false);
             }
         })();
-    }, [loggedIn]);
+    }, []);
 
     useEffect(() => {
         if (refreshContact) {
