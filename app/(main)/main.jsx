@@ -7,10 +7,15 @@ import { useAuth } from '../../contexts/auth';
 import { CCDialog } from './ccdialog';
 import { PendingListItem, UserListItem, UserListArea } from './userlist';
 
-async function fetchSubscriber(setArray, setRefresh, user, confirm) {
+// TODO: Clean up functions
+async function fetchSubscriber(setListButtons, setArray, setRefresh, user, confirm) {
+    let query = "subscriber, name:subscriber(first_name, last_name)";
+    if (confirm) {
+        query = "subscriber, name:subscriber(first_name, last_name), last_alert:subscriber(last_alert)";
+    }
     const { data, error } = await supabase
         .from("close_contacts")
-        .select("subscriber, name:subscriber(first_name, last_name)")
+        .select(query)
         .eq("publisher", user.id)
         .is("confirmed", confirm);
     if (error) {
@@ -19,6 +24,9 @@ async function fetchSubscriber(setArray, setRefresh, user, confirm) {
         setArray(data);
     }
     setRefresh(false);
+    if (!confirm) {
+        setListButtons(false);
+    }
 }
 
 export default function HomeScreen() {
@@ -29,6 +37,7 @@ export default function HomeScreen() {
     const [ refreshName, setRefreshName ] = useState(true);
     const [ refreshContact, setRefreshContact ] = useState(true);
     const [ refreshPending, setRefreshPending ] = useState(true);
+    const [ listButtons, setListButtons ] = useState(false);
     const [ loadingSignout, setLoadingSignout ] = useState(false);
     const [ dialog, setDialog ] = useState(false);
 
@@ -48,13 +57,13 @@ export default function HomeScreen() {
 
     useEffect(() => {
         if (refreshContact) {
-            fetchSubscriber(setContact, setRefreshContact, loggedIn, true);
+            fetchSubscriber(setListButtons, setContact, setRefreshContact, loggedIn, true);
         }
     }, [refreshContact, loggedIn]);
 
     useEffect(() => {
         if (refreshPending) {
-            fetchSubscriber(setPending, setRefreshPending, loggedIn, false);
+            fetchSubscriber(setListButtons, setPending, setRefreshPending, loggedIn, false);
         }
     }, [refreshPending, loggedIn]);
 
@@ -83,7 +92,7 @@ export default function HomeScreen() {
                     ? <Text variant="headlineSmall">You have no close contacts...</Text>
                     : <FlatList
                         data={ contact }
-                        renderItem={ UserListItem }
+                        renderItem={ ({ item }) => UserListItem({ item }) }
                         refreshing={ refreshContact } />
                     }
                 </UserListArea>
@@ -92,7 +101,9 @@ export default function HomeScreen() {
                     ? <Text variant="headlineSmall">You have no pending connections.</Text>
                     : <FlatList
                         data={ pending }
-                        renderItem={ ({ item }) => PendingListItem({ item }, loggedIn, setRefreshContact, setRefreshPending) }
+                        renderItem={({ item }) => PendingListItem(
+                            { item }, loggedIn, setRefreshContact, setRefreshPending, listButtons, setListButtons
+                        )}
                         refreshing={ refreshPending } />
                     }
                 </UserListArea>
