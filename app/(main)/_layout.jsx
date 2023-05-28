@@ -43,6 +43,21 @@ export default function DrawerRoot() {
                     title: "User Profile",
                     swipeEnabled: !toggleDrawer
                 }}/>
+            <Drawer.Screen
+                name="ccdialog"
+                options={{
+                    drawerItemStyle: { display: 'none' }
+                }}/>
+            <Drawer.Screen
+                name="userlist"
+                options={{
+                    drawerItemStyle: { display: 'none' }
+                }}/>
+            <Drawer.Screen
+                name="drawer"
+                options={{
+                    drawerItemStyle: { display: 'none' }
+                }}/>
         </Drawer>
     );
 }
