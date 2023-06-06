@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, Portal, TextInput, Button, Text, ActivityIndicator } from "react-native-paper";
-import { useAuth } from "../../contexts/auth";
-import { supabase } from "../../lib/supabase";
+import { useAuth } from "../contexts/auth";
+import { supabase } from "../lib/supabase";
 import { View } from "react-native";
 
 async function fetchEmail(user, email, setVisible, setLoading, setError) {
@@ -10,6 +10,7 @@ async function fetchEmail(user, email, setVisible, setLoading, setError) {
         return;
     }
     setLoading(true);
+    setError("");
     const { data, error: emailError } = await supabase.from("user_info").select("id").eq("email", email);
     if (emailError) {
         setError(emailError.message);
@@ -26,11 +27,22 @@ async function fetchEmail(user, email, setVisible, setLoading, setError) {
         publisher: data[0].id,
         confirmed: false
     });
-    if (insertError) {
-        setError(insertError.message);
+    if (!insertError) {
+        setLoading(false);
+        setVisible(false);
+        return;
+    }
+    switch(insertError.code) {
+        case "23505":
+            setError("Request for close contact already exists.");
+            break;
+        case "23514":
+            setError("Cannot be a close contact of yourself.");
+            break;
+        default:
+            setError(`Unknown error: ${insertError.message}`);
     }
     setLoading(false);
-    setVisible(false);
 }
 
 export function CCDialog({ visible, setVisible }) {

@@ -1,6 +1,7 @@
 import { View } from "react-native";
-import { Text, Switch, Avatar } from "react-native-paper";
-import { Drawer } from "./drawer";
+import { Text, Switch } from "react-native-paper";
+import { DrawerToggleButton } from "@react-navigation/drawer";
+import { Drawer } from "../../ui/drawer";
 import { useState } from "react";
 
 function DrawerToggle({ toggleDrawer, setToggleDrawer }) {
@@ -12,21 +13,16 @@ function DrawerToggle({ toggleDrawer, setToggleDrawer }) {
     );
 }
 
-function IconReplace() {
-    return (
-        <View style={{ padding: 10 }}>
-            <Avatar.Icon size={30} icon="cctv"/>
-        </View>
-    );
-}
-
 export default function DrawerRoot() {
     const [toggleDrawer, setToggleDrawer] = useState(false);
 
     return (
         <Drawer
             screenOptions={{
-                headerLeft: IconReplace,
+                headerLeft: () => DrawerToggleButton({
+                    tintColor: toggleDrawer ? '#FF0000' : '#000000',
+                    disabled: toggleDrawer,
+                }),
                 headerRight: () => DrawerToggle({toggleDrawer, setToggleDrawer}),
             }}>
             <Drawer.Screen
@@ -37,26 +33,11 @@ export default function DrawerRoot() {
                     swipeEnabled: !toggleDrawer
                 }}/>
             <Drawer.Screen
-                name="main"
+                name="contacts"
                 options={{
                     drawerLabel: "User Settings",
                     title: "User Profile",
                     swipeEnabled: !toggleDrawer
-                }}/>
-            <Drawer.Screen
-                name="ccdialog"
-                options={{
-                    drawerItemStyle: { display: 'none' }
-                }}/>
-            <Drawer.Screen
-                name="userlist"
-                options={{
-                    drawerItemStyle: { display: 'none' }
-                }}/>
-            <Drawer.Screen
-                name="drawer"
-                options={{
-                    drawerItemStyle: { display: 'none' }
                 }}/>
         </Drawer>
     );

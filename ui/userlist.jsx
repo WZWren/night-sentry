@@ -1,6 +1,6 @@
 import { View } from "react-native";
 import { Text, Card, IconButton, ActivityIndicator } from "react-native-paper";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../lib/supabase";
 
 export function UserListArea({ name, setRefresh, refresh, children }) {
     return(

@@ -4,8 +4,8 @@ import { supabase } from "../../lib/supabase";
 import { useState, useEffect } from 'react';
 import { styles } from '../../lib/style';
 import { useAuth } from '../../contexts/auth'; 
-import { CCDialog } from './ccdialog';
-import { PendingListItem, UserListItem, UserListArea } from './userlist';
+import { CCDialog } from '../../ui/ccdialog';
+import { PendingListItem, UserListItem, UserListArea } from '../../ui/userlist';
 
 // TODO: Clean up functions
 async function fetchSubscriber(setListButtons, setArray, setRefresh, user, confirm) {
