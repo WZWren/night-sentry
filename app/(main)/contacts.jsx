@@ -1,17 +1,30 @@
 import { View, FlatList } from 'react-native';
 import { Text, Button, FAB, PaperProvider, ActivityIndicator } from "react-native-paper";
-import { supabase } from "../../lib/supabase";
 import { useState, useEffect } from 'react';
-import { styles } from '../../lib/style';
+
+import { supabase } from "../../lib/supabase";
+import { viewStyle, textStyle } from '../../ui/style';
 import { useAuth } from '../../contexts/auth'; 
 import { CCDialog } from '../../ui/ccdialog';
 import { PendingListItem, UserListItem, UserListArea } from '../../ui/userlist';
 
-// TODO: Clean up functions
+/**
+ * Asynchronously fetches the list of subscribers, with the user as the publisher.
+ * 
+ * @param {*} setListButtons Setter for the Pending list buttons hook. During a fetch request for
+ *                           the pending list, the list buttons should be disabled.
+ * @param {*} setArray Setter for the arrays in the close contacts list.
+ * @param {*} setRefresh Setter for the loading bars in the UI.
+ * @param {*} user The current user of the app.
+ * @param {*} confirm The confirmation status of the request. If true, this is the Contacts list.
+ *                    Otherwise this is the Pending list.
+ */
 async function fetchSubscriber(setListButtons, setArray, setRefresh, user, confirm) {
-    let query = "subscriber, name:subscriber(first_name, last_name)";
+    let query = "";
     if (confirm) {
         query = "subscriber, name:subscriber(first_name, last_name), last_alert:subscriber(last_alert)";
+    } else {
+        query = "subscriber, name:subscriber(first_name, last_name)";
     }
     const { data, error } = await supabase
         .from("close_contacts")
@@ -29,31 +42,42 @@ async function fetchSubscriber(setListButtons, setArray, setRefresh, user, confi
     }
 }
 
-export default function HomeScreen() {
+/**
+ * Contacts page for the app. Controls the user's contact list, and allows the user to log out.
+ */
+export default function ContactsPage() {
+    // gets the user from the Auth context.
     const { loggedIn } = useAuth();
+    // UI database info hooks
     const [ name, setName ] = useState('Placeholder');
     const [ contact, setContact ] = useState([]);
     const [ pending, setPending ] = useState([]);
+    // Prevent multiple response hooks - for accept/decline buttons in user requests.
+    const [ listButtons, setListButtons ] = useState(false);
+    // Hook to show UI for adding new close contact.
+    const [ dialog, setDialog ] = useState(false);
+    // UI responsiveness hooks
     const [ refreshName, setRefreshName ] = useState(true);
     const [ refreshContact, setRefreshContact ] = useState(true);
     const [ refreshPending, setRefreshPending ] = useState(true);
-    const [ listButtons, setListButtons ] = useState(false);
     const [ loadingSignout, setLoadingSignout ] = useState(false);
-    const [ dialog, setDialog ] = useState(false);
 
     console.log("Index loading...");
 
     useEffect(() => {
-        (async () => {
-            const { data, error } = await supabase.from("user_info").select("first_name, last_name").eq("id", loggedIn.id);
-            if (error) {
-                console.log(error.message);
-            } else {
-                setName(data[0].first_name + " " + data[0].last_name);
-                setRefreshName(false);
-            }
-        })();
-    }, []);
+        // this hook should only trigger if the user is actually logged in.
+        if (loggedIn) {
+            (async () => {
+                const { data, error } = await supabase.from("user_info").select("first_name, last_name").eq("id", loggedIn.id);
+                if (error) {
+                    console.log(error.message);
+                } else {
+                    setName(data[0].first_name + " " + data[0].last_name);
+                    setRefreshName(false);
+                }
+            })();
+        }
+    }, [loggedIn]);
 
     useEffect(() => {
         if (refreshContact) {
@@ -67,7 +91,7 @@ export default function HomeScreen() {
         }
     }, [refreshPending, loggedIn]);
 
-    
+    // Handles the user signout.
     const handleSignout = async () => {
         setLoadingSignout(true);
         supabase.auth.signOut()
@@ -81,11 +105,11 @@ export default function HomeScreen() {
 
     return (
         <PaperProvider>
-            <View style={styles.colContainerStart}>
-                <View style={styles.rowView}>
+            <View style={viewStyle.colContainerStart}>
+                <View style={viewStyle.rowView}>
                     {!refreshName && <Text variant="headlineSmall">Hello, {name}</Text>}
                     {(refreshName || loadingSignout) && <ActivityIndicator/>}
-                    {!loadingSignout && <Button onPress={ handleSignout } labelStyle={ styles.textStandard }>Sign Out</Button>}
+                    {!loadingSignout && <Button onPress={ handleSignout } labelStyle={ textStyle.standard }>Sign Out</Button>}
                 </View>
                 <UserListArea name="Current Close Contacts" setRefresh={setRefreshContact} refresh={refreshContact}>
                     { contact.length == 0

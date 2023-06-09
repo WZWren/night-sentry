@@ -4,7 +4,17 @@ import { useAuth } from "../contexts/auth";
 import { supabase } from "../lib/supabase";
 import { View } from "react-native";
 
-async function fetchEmail(user, email, setVisible, setLoading, setError) {
+/**
+ * Asynchronously checks the email input to see if it is a valid user - if it is, sends a request to
+ * the user.
+ * 
+ * @param {*} user The currently logged-in user.
+ * @param {*} email The email of the close contact to add.
+ * @param {*} setVisible Setter for the hook to set visibility of the dialog.
+ * @param {*} setLoading Setter for the UI loading bar element.
+ * @param {*} setError Setter for the error message to show the user.
+ */
+async function handleNewCC(user, email, setVisible, setLoading, setError) {
     if (email == "") {
         setError("Fields should not be empty.");
         return;
@@ -45,6 +55,12 @@ async function fetchEmail(user, email, setVisible, setLoading, setError) {
     setLoading(false);
 }
 
+/**
+ * Dialog box for adding close contacts to the user.
+ * 
+ * @param {*} {visible} Hook for visibility. Required for dialog box implementation.
+ * @param {*} {setVisible} Allows the dialog box to close itself internally.
+ */
 export function CCDialog({ visible, setVisible }) {
     const { loggedIn } = useAuth();
     const [ email, setEmail ] = useState("");
@@ -70,7 +86,7 @@ export function CCDialog({ visible, setVisible }) {
                     </View>
                 </Dialog.Content>
                 <Dialog.Actions>
-                    <Button onPress={() => fetchEmail(loggedIn, email, setVisible, setLoading, setError)}>Submit</Button>
+                    <Button onPress={() => handleNewCC(loggedIn, email, setVisible, setLoading, setError)}>Submit</Button>
                 </Dialog.Actions>
             </Dialog>
         </Portal>

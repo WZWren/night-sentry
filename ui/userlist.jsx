@@ -1,10 +1,20 @@
 import { View } from "react-native";
 import { Text, Card, IconButton, ActivityIndicator } from "react-native-paper";
+
+import { viewStyle } from "./style.js";
 import { supabase } from "../lib/supabase";
 
+/**
+ * User area list renders the main list area for the individual items.
+ * 
+ * @param {*} {name} The label of the List area.
+ * @param {*} {setRefresh} The hook responsible for rendering the loading bar.
+ * @param {*} {refresh} Boolean item to show the loading bar.
+ * @param {*} {children} The JSX elements to render in the list area.
+ */
 export function UserListArea({ name, setRefresh, refresh, children }) {
     return(
-        <View style={{ width: "80%", height: "40%", gap: 5 }}>
+        <View style={{ ...viewStyle, height: "40%", gap: 5 }}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", minHeight: 45 }}>
                 <Text variant="titleLarge">{name}</Text>
                 {!refresh && <IconButton icon="reload" size={16} onPress={setRefresh} mode="outlined"/>}
@@ -15,6 +25,13 @@ export function UserListArea({ name, setRefresh, refresh, children }) {
     );
 }
 
+/**
+ * Item for the FlatList, that does not render internal buttons.
+ * 
+ * @param {*} {item} The object to render as an item of a given list. Item contains
+ *                   the name object wrapping first_name and last_name, and the
+ *                   last_alert object wrapping last_alert.
+ */
 export function UserListItem({ item }) {
     return (
         <Card mode="outlined">
@@ -25,6 +42,18 @@ export function UserListItem({ item }) {
     );
 }
 
+/**
+ * Item for the FlatList, that renders internal buttons.
+ * 
+ * @param {*} {item} The object to render as an item of a given list. Item contains
+ *                   the name object wrapping first_name and last_name, and the
+ *                   last_alert object wrapping last_alert.
+ * @param {*} loggedIn The current user to render.
+ * @param {*} refreshContact Setter to refresh the ContactList with.
+ * @param {*} refreshPending Setter to refresh the PendingList with.
+ * @param {*} disabled The hook to control whether the internal buttons are disabled or not.
+ * @param {*} setDisabled Setter for the param hook disabled.
+ */
 export function PendingListItem({ item }, loggedIn, refreshContact, refreshPending, disabled, setDisabled) {
     // publisher and subscribers are both passed in as IDs - publisher is the curr user,
     // and subscriber is the ID of the requester, given in the form of item
@@ -42,6 +71,7 @@ export function PendingListItem({ item }, loggedIn, refreshContact, refreshPendi
 
     async function handleAccept(publisher, subscriber, refreshContact, refreshPending) {
         setDisabled(true);
+        // TODO: Move the insertion to the backend.
         const { error: updateError } = await supabase.from("close_contacts")
             .update({ confirmed: true })
             .eq("publisher", publisher)

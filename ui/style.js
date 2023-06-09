@@ -1,6 +1,12 @@
+/**
+ * style.js holds the general styling info used throughout the app, like
+ * background color, page styling and text styling. Component-specific styling
+ * are either done inline or under nativeStyle in the component.
+ */
+
 import { StyleSheet } from "react-native";
 
-export const styles = StyleSheet.create({
+export const viewStyle = StyleSheet.create({
     colContainer: {
         flex: 1,
         alignItems: 'center',
@@ -18,11 +24,17 @@ export const styles = StyleSheet.create({
         flexDirection: "row",
         gap: 4,
     },
-    textStandard: {
+    spaceOnSides: {
+        width: '80%',
+    },
+});
+
+export const textStyle = StyleSheet.create({
+    standard: {
         fontSize: 16,
     },
-    textLink: {
+    link: {
         fontSize: 16,
         color: "#00004D",
-    }
-});
+    },
+})

@@ -1,10 +1,18 @@
 import { useState } from "react";
 import { View } from "react-native";
 import { Text, TextInput, Button, ActivityIndicator, Snackbar } from "react-native-paper";
-import { supabase } from "../../lib/supabase";
 import { Link } from "expo-router";
-import { styles } from "../../lib/style";
 
+import { supabase } from "../../lib/supabase";
+import { viewStyle, textStyle } from "../../ui/style";
+
+/**
+ * Login page for the app. This page is the main page to redirect to when a user first
+ * opens the app without an active sign-in. <br>
+ * 
+ * This page will redirect users to the (main)/alert page on sign-in or the (auth)/register
+ * page if the user presses the sign-up button.
+ */
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -40,7 +48,7 @@ export default function LoginPage() {
 
     // we do not abstract the text input elements as they are only used 2 times in this instance.
     return (
-        <View style={ styles.colContainer }>
+        <View style={ viewStyle.colContainer }>
             <Text variant="headlineLarge">Log in...</Text>
             <TextInput
                 autoCapitalize="none"
@@ -49,7 +57,7 @@ export default function LoginPage() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="Email"
-                style={{ width: '80%' }} />
+                style={ viewStyle.spaceOnSides } />
             <TextInput
                 secureTextEntry
                 autoCapitalize="none"
@@ -58,12 +66,12 @@ export default function LoginPage() {
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Password"
-                style={{ width: '80%' }}/>
-            {!loading && <Button onPress={handleSubmit} labelStyle={ styles.textStandard }>Login</Button>}
+                style={ viewStyle.spaceOnSides }/>
+            {!loading && <Button onPress={handleSubmit} labelStyle={ textStyle.standard }>Login</Button>}
             {loading && <ActivityIndicator size="small" style={{ marginTop: 4 }}/>}
-            <View style={ styles.rowView }>
-                <Text style={ styles.textStandard }>No account?</Text>
-                <Link href="/register" style={ styles.textLink }>Sign up</Link>
+            <View style={ viewStyle.rowView }>
+                <Text style={ textStyle.standard }>No account?</Text>
+                <Link href="/register" style={ textStyle.link }>Sign up</Link>
             </View>
             <Snackbar
                 visible={errorMsg}
