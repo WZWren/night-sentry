@@ -29,21 +29,22 @@ export default function Register() {
         }
         // see comments at login to see differences from firebase
         setLoading(true);
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        setLoading(false);
+        const { error } = await supabase.auth.signUp({
+            email,
+            password,
+            // adjusted the signup process, as we shouldn't have to send 2 separate requests to
+            // signup - instead, we package the firstName/lastName info in the metadata of the user.
+            options: {
+                data: {
+                    first_name: firstName,
+                    last_name: lastName
+                }
+            }
+        });
         if (error) {
             setErrorMsg(error.message);
-            return;
-        } else {
-            // otherwise the signup was successful.
-            const { error } = await supabase.from("user_info").insert({
-                id: data.user.id,
-                first_name: firstName,
-                last_name: lastName,
-                email: data.user.email,
-            });
-            console.log(error ? error.message : "Insertion successful.");
         }
+        setLoading(false);
     }
     
     return (
