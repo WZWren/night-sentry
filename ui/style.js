@@ -35,6 +35,6 @@ export const textStyle = StyleSheet.create({
     },
     link: {
         fontSize: 16,
-        color: "#00004D",
+        color: "#6080BB",
     },
-})
+});

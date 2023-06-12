@@ -1,5 +1,5 @@
 import { View, FlatList } from 'react-native';
-import { Text, Button, FAB, PaperProvider, ActivityIndicator } from "react-native-paper";
+import { Text, Button, FAB, PaperProvider, ActivityIndicator, MD3DarkTheme } from "react-native-paper";
 import { useState, useEffect } from 'react';
 
 import { supabase } from "../../lib/supabase";
@@ -104,7 +104,7 @@ export default function ContactsPage() {
     }
 
     return (
-        <PaperProvider>
+        <PaperProvider theme={MD3DarkTheme}>
             <View style={viewStyle.colContainerStart}>
                 <View style={viewStyle.rowView}>
                     {!refreshName && <Text variant="headlineSmall">Hello, {name}</Text>}

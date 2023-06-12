@@ -20,7 +20,7 @@ export default function DrawerRoot() {
         <Drawer
             screenOptions={{
                 headerLeft: () => DrawerToggleButton({
-                    tintColor: toggleDrawer ? '#FF0000' : '#000000',
+                    tintColor: toggleDrawer ? '#000000' : '#FFFFFF',
                     disabled: toggleDrawer,
                 }),
                 headerRight: () => DrawerToggle({toggleDrawer, setToggleDrawer}),

@@ -14,7 +14,7 @@ import { supabase } from "../lib/supabase";
  */
 export function UserListArea({ name, setRefresh, refresh, children }) {
     return(
-        <View style={{ ...viewStyle, height: "40%", gap: 5 }}>
+        <View style={{ ...viewStyle.spaceOnSides, height: "40%", gap: 5 }}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", minHeight: 45 }}>
                 <Text variant="titleLarge">{name}</Text>
                 {!refresh && <IconButton icon="reload" size={16} onPress={setRefresh} mode="outlined"/>}
