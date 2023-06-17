@@ -24,6 +24,12 @@ export const viewStyle = StyleSheet.create({
         flexDirection: "row",
         gap: 4,
     },
+    rowViewCenter: {
+        flexDirection: "row",
+        alignItems: 'center',
+        gap: 4,
+        padding: 8,
+    },
     spaceOnSides: {
         width: '80%',
     },

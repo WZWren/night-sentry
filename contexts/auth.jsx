@@ -25,7 +25,7 @@ function useProtectedRoute(loggedIn) {
             router.replace("/login");
         } else if (loggedIn && inAuthGroup) {
             console.log("Routing to Alert...");
-            router.replace("/alert");
+            router.replace("/permissions");
         }
     }, [loggedIn, segments, router]);
 }

@@ -1,34 +1,36 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import * as Location from 'expo-location';
 
+import { LocalPermStatus } from './permissions-status';
+
 const LocationContext = createContext({});
 
-export function useNotif() {
+export function useLocation() {
     return useContext(LocationContext);
 }
 
 export function LocationProvider({children}) {
-    const [permissionStatus, setPermissionStatus] = useState(false);
+    const [permissionStatus, setPermissionStatus] = useState(null);
     const [location, setLocation] = useState(null);
 
-    // TODO: Fix logic of getting the permission, and create a screen to have the user approve
-    // the permissions requested.
     useEffect(() => {
-        (async () => {
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            setPermissionStatus(status == 'granted');
-            if (!permissionStatus) {
-              console.log('Permission to access location was denied/not accepted yet.');
-              return;
-            }
-            let location = await Location.getCurrentPositionAsync({});
-            setLocation(location);
-            console.log(location.coords.latitude + ", " + location.coords.longitude);
-        })();
-    }, []);
+        if (permissionStatus == LocalPermStatus.INIT) {
+            (async () => {
+                let { status } = await Location.requestForegroundPermissionsAsync();
+                setPermissionStatus(status);
+                if (status !== LocalPermStatus.GRANTED) {
+                  console.log('Permission to access location was denied/not accepted yet.');
+                  return;
+                }
+                let location = await Location.getCurrentPositionAsync({});
+                setLocation(location);
+                console.log(location.coords.latitude + ", " + location.coords.longitude);
+            })();
+        }
+    }, [permissionStatus]);
 
     return (
-        <LocationContext.Provider value={location}>
+        <LocationContext.Provider value={{ location, permissionStatus, setPermissionStatus }}>
             {children}
         </LocationContext.Provider>
     );

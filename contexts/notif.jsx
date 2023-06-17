@@ -7,6 +7,7 @@ import * as Notifications from 'expo-notifications';
 
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./auth";
+import { LocalPermStatus } from "./permissions-status";
 
 const NotificationsContext = createContext({});
 
@@ -24,7 +25,7 @@ Notifications.setNotificationHandler({
     }),
 });
 
-async function registerForPushNotificationsAsync() {
+async function registerForPushNotificationsAsync(setPermissionStatus) {
     let token;
 
     if (Platform.OS === 'android') {
@@ -39,11 +40,12 @@ async function registerForPushNotificationsAsync() {
     if (Device.isDevice) {
         const { status: existingStatus } = await Notifications.getPermissionsAsync();
         let finalStatus = existingStatus;
-        if (existingStatus !== 'granted') {
+        if (existingStatus !== LocalPermStatus.GRANTED) {
             const { status } = await Notifications.requestPermissionsAsync();
             finalStatus = status;
         }
-        if (finalStatus !== 'granted') {
+        setPermissionStatus(finalStatus);
+        if (finalStatus !== LocalPermStatus.GRANTED) {
             console.log('Failed to get push token for push notification!');
             return;
         }
@@ -58,6 +60,8 @@ async function registerForPushNotificationsAsync() {
 
 export function NotificationsProvider({ children }) {
     const { loggedIn } = useAuth();
+    // exposes the status of the permissions fetch request
+    const [ permissionStatus, setPermissionStatus ] = useState(null);
     // expoPushToken is to be pushed to the supabase user_info table.
     const [ expoPushToken, setExpoPushToken ] = useState("");
     // notification is the physical notification from the app
@@ -66,23 +70,25 @@ export function NotificationsProvider({ children }) {
     const responseListener = useRef();
 
     useEffect(() => {
-        registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
-    
-        notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-            setNotification(notification);
-            console.log("Notification received! " + notification.request.content.title);
-        });
-    
-        responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-            // TODO: this is where router linking will take place.
-            console.log(response);
-        });
-    
-        return () => {
-            Notifications.removeNotificationSubscription(notificationListener.current);
-            Notifications.removeNotificationSubscription(responseListener.current);
-        };
-    }, []);
+        if (permissionStatus == LocalPermStatus.INIT) {
+            registerForPushNotificationsAsync(setPermissionStatus).then(token => setExpoPushToken(token));
+            
+            notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+                setNotification(notification);
+                console.log("Notification received! " + notification.request.content.title);
+            });
+        
+            responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+                // TODO: this is where router linking will take place.
+                console.log(response);
+            });
+        
+            return () => {
+                Notifications.removeNotificationSubscription(notificationListener.current);
+                Notifications.removeNotificationSubscription(responseListener.current);
+            };
+        }
+    }, [permissionStatus]);
 
     useEffect(() => {
         if (loggedIn && expoPushToken) {
@@ -99,7 +105,7 @@ export function NotificationsProvider({ children }) {
     }, [loggedIn, expoPushToken]);
 
     return (
-        <NotificationsContext.Provider value={{ notification, setNotification, expoPushToken }}>
+        <NotificationsContext.Provider value={{ notification, permissionStatus, expoPushToken, setPermissionStatus }}>
             {children}
         </NotificationsContext.Provider>
     );
