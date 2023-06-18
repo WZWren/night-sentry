@@ -22,9 +22,9 @@ import { PendingListItem, UserListItem, UserListArea } from '../../ui/userlist';
 async function fetchSubscriber(setListButtons, setArray, setRefresh, user, confirm) {
     let query = "";
     if (confirm) {
-        query = "subscriber, name:subscriber(first_name, last_name), last_alert:subscriber(last_alert)";
+        query = "subscriber, info:subscriber(first_name, last_name, last_alert, alerts(location))";
     } else {
-        query = "subscriber, name:subscriber(first_name, last_name)";
+        query = "subscriber, info:subscriber(first_name, last_name)";
     }
     const { data, error } = await supabase
         .from("close_contacts")

@@ -5,6 +5,7 @@ import { ActivityIndicator, Button, Text } from "react-native-paper";
 import { viewStyle } from "../../ui/style";
 import { useAuth } from "../../contexts/auth";
 import { supabase } from "../../lib/supabase";
+import { useLocation } from "../../contexts/location";
 
 /**
  * Alert Page for the app. This will be the main page for the app, and is the first
@@ -13,6 +14,7 @@ import { supabase } from "../../lib/supabase";
  */
 export default function AlertPage() {
     const { loggedIn } = useAuth();
+    const { location } = useLocation();
     const [ statusMessage, setMessage ] = useState("Awaiting input...");
     const [ loading, setLoading ] = useState(false);
 
@@ -20,6 +22,7 @@ export default function AlertPage() {
         setLoading(true);
         const { error } = await supabase.from("alerts").insert({
             user_id: loggedIn.id,
+            location: location,
         });
         setLoading(false);
         setMessage(error ? error.message : "Alert sent!");

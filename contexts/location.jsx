@@ -22,9 +22,11 @@ export function LocationProvider({children}) {
                   console.log('Permission to access location was denied/not accepted yet.');
                   return;
                 }
-                let location = await Location.getCurrentPositionAsync({});
-                setLocation(location);
-                console.log(location.coords.latitude + ", " + location.coords.longitude);
+
+                Location.watchPositionAsync(
+                    LOCATION_SETTINGS,
+                    (callback) => setLocation(callback)
+                );
             })();
         }
     }, [permissionStatus]);
@@ -35,3 +37,9 @@ export function LocationProvider({children}) {
         </LocationContext.Provider>
     );
 }
+
+const LOCATION_SETTINGS = {
+    accuracy: Location.Accuracy.High,
+    timeInterval: 3000,
+    distanceInterval: 0,
+};

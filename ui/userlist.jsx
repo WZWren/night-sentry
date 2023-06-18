@@ -4,6 +4,14 @@ import { Text, Card, IconButton, ActivityIndicator } from "react-native-paper";
 import { viewStyle } from "./style.js";
 import { supabase } from "../lib/supabase";
 
+function epochToDate(alert) {
+    if (alert == null) {
+        return "No alerts yet!";
+    }
+    const date = new Date(alert.location.timestamp);
+    return `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}, at ${date.getHours()}:${date.getMinutes()}`;
+}
+
 /**
  * User area list renders the main list area for the individual items.
  * 
@@ -14,7 +22,7 @@ import { supabase } from "../lib/supabase";
  */
 export function UserListArea({ name, setRefresh, refresh, children }) {
     return(
-        <View style={{ ...viewStyle, height: "40%", gap: 5 }}>
+        <View style={{ ...viewStyle.spaceOnSides, height: "40%", gap: 5 }}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", minHeight: 45 }}>
                 <Text variant="titleLarge">{name}</Text>
                 {!refresh && <IconButton icon="reload" size={16} onPress={setRefresh} mode="outlined"/>}
@@ -36,8 +44,8 @@ export function UserListItem({ item }) {
     return (
         <Card mode="outlined">
             <Card.Title
-                title={item.name.first_name + " " + item.name.last_name}
-                subtitle={"Last alert id: " + item.last_alert.last_alert}/>
+                title={item.info.first_name + " " + item.info.last_name}
+                subtitle={"Last alert: " + epochToDate(item.info.alerts)}/>
         </Card>
     );
 }
@@ -92,7 +100,7 @@ export function PendingListItem({ item }, loggedIn, refreshContact, refreshPendi
     return (
         <Card mode="outlined">
             <Card.Title
-                title={item.name.first_name + " " + item.name.last_name}/>
+                title={item.info.first_name + " " + item.info.last_name}/>
             <Card.Actions>
                 <IconButton
                     disabled={disabled}
