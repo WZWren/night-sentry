@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import { Text, Card, IconButton, ActivityIndicator } from "react-native-paper";
+import { Text, Card, IconButton, ActivityIndicator, TouchableRipple } from "react-native-paper";
 
 import { viewStyle } from "./style.js";
 import { supabase } from "../lib/supabase";
@@ -43,9 +43,11 @@ export function UserListArea({ name, setRefresh, refresh, children }) {
 export function UserListItem({ item }) {
     return (
         <Card mode="outlined">
-            <Card.Title
-                title={item.info.first_name + " " + item.info.last_name}
-                subtitle={"Last alert: " + epochToDate(item.info.alerts)}/>
+            <TouchableRipple borderless onPress={() => console.log("Heyhey people")}>
+                <Card.Title
+                    title={item.info.first_name + " " + item.info.last_name}
+                    subtitle={"Last alert: " + epochToDate(item.info.alerts)}/>
+            </TouchableRipple>
         </Card>
     );
 }
