@@ -2,19 +2,25 @@ import { View } from "react-native";
 import { Text, Switch } from "react-native-paper";
 import { DrawerToggleButton } from "@react-navigation/drawer";
 import { Drawer } from "../../ui/drawer";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "expo-router";
 
 function DrawerToggle({ toggleDrawer, setToggleDrawer }) {
     return (
-        <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
-            <Text>Lock Swipe Drawer</Text>
+        <View style={{ flexDirection: "column", justifyContent: "center", alignItems: "center", gap: -15, margin: 8, marginBottom: 16 }}>
             <Switch value={ toggleDrawer } onValueChange={ setToggleDrawer } />
+            <Text variant="labelSmall">Lock Drawer</Text>
         </View>
     );
 }
 
 export default function DrawerRoot() {
+    const { title } = useSearchParams();
     const [toggleDrawer, setToggleDrawer] = useState(false);
+
+    useEffect(() => {
+        console.log("Title is " + title);
+    }, [title]);
 
     return (
         <Drawer
@@ -38,6 +44,12 @@ export default function DrawerRoot() {
                     drawerLabel: "User Settings",
                     title: "User Profile",
                     swipeEnabled: !toggleDrawer
+                }}/>
+            <Drawer.Screen
+                name="details"
+                options={{
+                    title,
+                    drawerItemStyle: { display: 'none' }
                 }}/>
         </Drawer>
     );

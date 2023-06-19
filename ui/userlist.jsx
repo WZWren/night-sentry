@@ -3,14 +3,7 @@ import { Text, Card, IconButton, ActivityIndicator, TouchableRipple } from "reac
 
 import { viewStyle } from "./style.js";
 import { supabase } from "../lib/supabase";
-
-function epochToDate(alert) {
-    if (alert == null) {
-        return "No alerts yet!";
-    }
-    const date = new Date(alert.location.timestamp);
-    return `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}, at ${date.getHours()}:${date.getMinutes()}`;
-}
+import { epochToDate } from "../lib/utils.js";
 
 /**
  * User area list renders the main list area for the individual items.
@@ -40,10 +33,23 @@ export function UserListArea({ name, setRefresh, refresh, children }) {
  *                   the name object wrapping first_name and last_name, and the
  *                   last_alert object wrapping last_alert.
  */
-export function UserListItem({ item }) {
+export function UserListItem({ item }, router) {
+    const redirectToAlert = () => {
+        if (item.info.alerts == null) {
+            return;
+        }
+        router.push({
+            pathname: `/details`,
+            params: {
+                id: item.subscriber,
+                title: `Alert for ${item.info.first_name} ${item.info.last_name}`,
+            },
+        });
+    }
+
     return (
         <Card mode="outlined">
-            <TouchableRipple borderless onPress={() => console.log("Heyhey people")}>
+            <TouchableRipple borderless onPress={redirectToAlert}>
                 <Card.Title
                     title={item.info.first_name + " " + item.info.last_name}
                     subtitle={"Last alert: " + epochToDate(item.info.alerts)}/>

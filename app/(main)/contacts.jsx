@@ -1,6 +1,7 @@
 import { View, FlatList } from 'react-native';
 import { Text, Button, FAB, PaperProvider, ActivityIndicator } from "react-native-paper";
 import { useState, useEffect } from 'react';
+import { useRouter } from 'expo-router';
 
 import { supabase } from "../../lib/supabase";
 import { viewStyle, textStyle } from '../../ui/style';
@@ -46,6 +47,7 @@ async function fetchSubscriber(setListButtons, setArray, setRefresh, user, confi
  * Contacts page for the app. Controls the user's contact list, and allows the user to log out.
  */
 export default function ContactsPage() {
+    const router = useRouter();
     // gets the user from the Auth context.
     const { loggedIn } = useAuth();
     // UI database info hooks
@@ -116,7 +118,7 @@ export default function ContactsPage() {
                     ? <Text variant="headlineSmall">You have no close contacts...</Text>
                     : <FlatList
                         data={ contact }
-                        renderItem={ ({ item }) => UserListItem({ item }) }
+                        renderItem={ ({ item }) => UserListItem({ item }, router) }
                         refreshing={ refreshContact } />
                     }
                 </UserListArea>
