@@ -3,7 +3,7 @@ import { useRouter, useSegments } from "expo-router";
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { fetchPublishers, unsubClient } from "./alert";
-import { Snackbar } from "react-native-paper";
+import { useSnackbar } from "./snackbar";
 
 const AuthContext = createContext({});
 
@@ -37,15 +37,11 @@ function useProtectedRoute(loggedIn) {
  * @returns The AuthContext.Provider component, encapsulating the user value.
  */
 export function AuthProvider({ children }) {
+    const { setMessage: setDistress } = useSnackbar();
     const [loggedIn, setLoggedIn] = useState(null);
-    const [distress, setDistress] = useState("");
     console.log("AuthProvider loading...");
 
     useProtectedRoute(loggedIn);
-
-    const handleDismiss = () => {
-        setDistress("");
-    }
 
     // this sets up the useEffect hooks to redirect users to the correct page.
     useEffect(() => {
@@ -60,17 +56,12 @@ export function AuthProvider({ children }) {
             }
         })
         return () => data.subscription.unsubscribe();
-    }, []);
+    }, [setDistress]);
+    // setDistress is a React hook and should never change - this is here due to exhaustive deps.
 
     return (
         <AuthContext.Provider value={{ loggedIn }}>
             { children }
-            <Snackbar
-                visible={distress}
-                onDismiss={handleDismiss}
-                duration={10000}>
-                {distress}
-            </Snackbar>
         </AuthContext.Provider>
     );
 }

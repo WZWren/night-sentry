@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { Text, TextInput, Button, ActivityIndicator, Snackbar } from "react-native-paper";
+import { Text, TextInput, Button, ActivityIndicator } from "react-native-paper";
 
 import { supabase } from "../../lib/supabase";
 import { viewStyle, textStyle } from "../../ui/style";
+import { useSnackbar } from "../../contexts/snackbar";
 
 /**
  * Register page for the app. This page is the onboarding page for new users. <br>
@@ -13,21 +14,16 @@ import { viewStyle, textStyle } from "../../ui/style";
  */
 
 export default function Register() {
+    // ui error message hook from the snackbar context
+    const { setMessage: setErrorMsg } = useSnackbar('');
     // field react hooks
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [verify, setVerify] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    // ui error message hook
-    const [errorMsg, setErrorMsg] = useState('');
     // ui responsiveness hook
     const [loading, setLoading] = useState(false);
-
-    // we can use errorMsg as a true/false check, as "" is falsey in JS.
-    const handleDismiss = () => {
-        setErrorMsg("");
-    }
 
     const handleSubmit = async () => {
         if (email == "" || password == "" || verify == "" || firstName == "" || lastName == "") {
@@ -105,15 +101,6 @@ export default function Register() {
                 style={ viewStyle.spaceOnSides }/>
             {!loading && <Button onPress={handleSubmit} labelStyle={ textStyle.standard }>Sign-up</Button>}
             {loading && <ActivityIndicator size="small" style={{ marginTop: 4 }}/>}
-            <Snackbar
-                visible={errorMsg}
-                onDismiss={handleDismiss}
-                action={{
-                    label: 'Dismiss',
-                    onPress: handleDismiss,
-                }}>
-                    {errorMsg}
-            </Snackbar>
         </View>
     );
 }

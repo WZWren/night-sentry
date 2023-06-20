@@ -34,6 +34,7 @@ export default function AlertDetailsPage() {
     useFocusEffect(
         useCallback(() => {
             fetchAlert(id).then((callback) => setAlert(callback));
+            return () => setAlert(null);
         }, [id, setAlert])
     );
 
