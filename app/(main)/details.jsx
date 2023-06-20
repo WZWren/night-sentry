@@ -1,8 +1,9 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 import { viewStyle } from "../../ui/style";
 import { Text } from "react-native-paper";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { supabase } from "../../lib/supabase";
 import { epochToDate } from "../../lib/utils";
 
@@ -28,6 +29,7 @@ export default function AlertDetailsPage() {
     // location is an object.
     const { id } = useLocalSearchParams();
     const [ alert, setAlert ] = useState(null);
+    const mapViewRef = useRef(null);
 
     useFocusEffect(
         useCallback(() => {
@@ -35,10 +37,37 @@ export default function AlertDetailsPage() {
         }, [id, setAlert])
     );
 
+    useEffect(() => {
+        if (alert && mapViewRef.current) {
+            mapViewRef.current.animateToRegion({
+                ...alert.location.coords,
+                latitudeDelta: 0.1,
+                longitudeDelta: 0.1
+            }, 1000);
+        }
+    }, [alert]);
+
     return (
         <View style={viewStyle.colContainer}>
-            <Text>{id}</Text>
-            <Text>{alert && epochToDate(alert)}</Text>
+            <Text>Alert last received at: {epochToDate(alert)}</Text>
+            <Text>{alert && JSON.stringify()}</Text>
+            <MapView
+                ref={mapViewRef}
+                showsUserLocation
+                provider={PROVIDER_GOOGLE}
+                initialRegion={{
+                    latitude: 1.359,
+                    longitude: 103.808,
+                    latitudeDelta: 0.1,
+                    longitudeDelta: 0.1,
+                }}
+                style={{ width: '90%', height: '50%' }}>
+                {alert && <Marker
+                    tracksViewChanges
+                    coordinate={alert.location.coords}
+                    title={"Last Alert Location"}/>
+                }
+            </MapView>
         </View>
     );
 }

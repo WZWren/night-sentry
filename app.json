@@ -24,14 +24,19 @@
         "backgroundColor": "#ffffff"
       },
       "userInterfaceStyle": "light",
-      "package": "com.wzwren.nightsentry"
+      "package": "com.wzwren.nightsentry",
+      "config": {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "8353a3ac-6966-437d-a029-3822c0170aad"
+        "projectId": ""
       }
     }
   }
