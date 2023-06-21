@@ -8,6 +8,7 @@ import { viewStyle } from "../../ui/style";
 import { useNotif } from "../../contexts/notif";
 import { useLocation } from "../../contexts/location";
 import { LocalPermStatus } from "../../contexts/permissions-status";
+import { useRecorder } from "../../contexts/recording";
 
 function DisplayStatus(props) {
     const prompt = "We cannot request for the permission from the app. " +
@@ -56,7 +57,7 @@ function AskPermissions(props) {
                 message={locationMessage} />
             <DisplayStatus
                 perms={props.perms.micPerms}
-                setPerms={props.setPerms.handleMicPerms}
+                setPerms={props.setPerms.setMicPerms}
                 type={"Microphone: "}
                 message={micMessage} />
             <View style={{ flexDirection:'row', padding: 8, flex: 1, alignItems: "center" }}>
@@ -104,7 +105,7 @@ export default function PermissionsPage() {
     const router = useRouter();
     const [ firstLaunch, setFirstLaunch ] = useState(true);
     const [ splash, setSplash ] = useState(true);
-    const { permissionStatus: micPerms, setPermissionStatus: setMicPerms } = useState(LocalPermStatus.INIT);
+    const { permissionStatus: micPerms, setPermissionStatus: setMicPerms } = useRecorder();
     const { permissionStatus: notifPerms, setPermissionStatus: setNotifPerms } = useNotif();
     const { permissionStatus: locationPerms, setPermissionStatus: setLocationPerms } = useLocation();
 
