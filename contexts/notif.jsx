@@ -9,6 +9,7 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "./auth";
 import { LocalPermStatus } from "./permissions-status";
 import { useRouter } from "expo-router";
+import { useSnackbar } from "./snackbar";
 
 const NotificationsContext = createContext({});
 
@@ -26,7 +27,7 @@ Notifications.setNotificationHandler({
     })
 });
 
-async function registerForPushNotificationsAsync(setPermissionStatus) {
+async function registerForPushNotificationsAsync(setPermissionStatus, setMessage) {
     let token;
 
     if (Platform.OS === 'android') {
@@ -46,11 +47,13 @@ async function registerForPushNotificationsAsync(setPermissionStatus) {
             finalStatus = status;
         }
         setPermissionStatus(finalStatus);
+        setMessage(finalStatus);
         if (finalStatus !== LocalPermStatus.GRANTED) {
             console.log('Failed to get push token for push notification!');
             return;
         }
         token = (await Notifications.getExpoPushTokenAsync()).data;
+        setMessage(token);
         console.log(token);
     } else {
         console.log('Must use physical device for Push Notifications');
@@ -61,9 +64,10 @@ async function registerForPushNotificationsAsync(setPermissionStatus) {
 
 export function NotificationsProvider({ children }) {
     const router = useRouter();
+    const { setMessage } = useSnackbar();
     const { loggedIn } = useAuth();
     // exposes the status of the permissions fetch request
-    const [ permissionStatus, setPermissionStatus ] = useState(LocalPermStatus.INIT);
+    const [ permissionStatus, setPermissionStatus ] = useState(null);
     // expoPushToken is to be pushed to the supabase user_info table.
     const [ expoPushToken, setExpoPushToken ] = useState("");
     // notification is the physical notification from the app
@@ -73,7 +77,7 @@ export function NotificationsProvider({ children }) {
 
     useEffect(() => {
         if (permissionStatus == LocalPermStatus.INIT) {
-            registerForPushNotificationsAsync(setPermissionStatus).then(token => setExpoPushToken(token));
+            registerForPushNotificationsAsync(setPermissionStatus, setMessage).then(token => setExpoPushToken(token));
             
             notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
                 setNotification(notification);
@@ -95,6 +99,7 @@ export function NotificationsProvider({ children }) {
     useEffect(() => {
         if (loggedIn && expoPushToken) {
             console.log("Updating user token: " + expoPushToken);
+            setMessage("Updating user token: " + expoPushToken);
             (async () => {
                 const { error } = await supabase.from("user_info")
                     .update({ expo_token: expoPushToken })

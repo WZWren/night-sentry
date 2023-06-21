@@ -7,7 +7,7 @@ import { useSearchParams } from "expo-router";
 
 function DrawerToggle({ toggleDrawer, setToggleDrawer }) {
     return (
-        <View style={{ flexDirection: "column", justifyContent: "center", alignItems: "center", gap: -15, margin: 8, marginBottom: 16 }}>
+        <View style={{ flexDirection: "column", justifyContent: "center", alignItems: "center", gap: -4, margin: 8, marginBottom: 16 }}>
             <Switch value={ toggleDrawer } onValueChange={ setToggleDrawer } />
             <Text variant="labelSmall">Lock Drawer</Text>
         </View>

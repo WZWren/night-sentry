@@ -9,13 +9,14 @@ import { viewStyle } from "../../ui/style";
 import { useNotif } from "../../contexts/notif";
 import { useLocation } from "../../contexts/location";
 import { LocalPermStatus } from "../../contexts/permissions-status";
+import { useSnackbar } from "../../contexts/snackbar";
 
 function DisplayStatus(props) {
     const prompt = "We cannot request for the permission from the app. " +
         "Go to Settings > Apps > night-sentry to enable the permission, then press Retry.";
 
     return (
-        <View style={{ ...viewStyle.rowViewCenter, flex: 1 }}>
+        <View style={{ ...viewStyle.rowViewCenter, flex: 2 }}>
             <Text variant="labelLarge" style={{ flex: 1, margin: 8 }}>{props.type}</Text>
             {
                 props.perms == LocalPermStatus.INIT
@@ -102,6 +103,7 @@ async function checkIfFirstLaunch() {
 
 // we will use this PermissionsPage as a pseudo-splash page.
 export default function PermissionsPage() {
+    const { setMessage } = useSnackbar();
     const router = useRouter();
     const [ firstLaunch, setFirstLaunch ] = useState(true);
     const [ splash, setSplash ] = useState(true);
@@ -111,6 +113,7 @@ export default function PermissionsPage() {
 
     const handleMicPerms = async () => {
         const { status } = await Audio.requestPermissionsAsync();
+        setMessage(status);
         setMicPerms(status);
     }
 
@@ -119,10 +122,10 @@ export default function PermissionsPage() {
             const firstLaunch = await checkIfFirstLaunch();
             setFirstLaunch(firstLaunch);
             if (firstLaunch) {
+                setMicPerms(await Audio.getPermissionsAsync());
                 setSplash(false);
                 return;
             }
-            setMicPerms(await Audio.getPermissionsAsync());
             // both notif and location are initialized as null - if one is null the other is also null.
             if (notifPerms == null || locationPerms == null) {
                 setLocationPerms(LocalPermStatus.INIT);
