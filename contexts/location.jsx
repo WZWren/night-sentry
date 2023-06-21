@@ -10,7 +10,7 @@ export function useLocation() {
 }
 
 export function LocationProvider({children}) {
-    const [permissionStatus, setPermissionStatus] = useState(null);
+    const [permissionStatus, setPermissionStatus] = useState(LocalPermStatus.INIT);
     const [location, setLocation] = useState(null);
 
     useEffect(() => {

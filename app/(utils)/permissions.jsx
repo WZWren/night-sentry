@@ -122,9 +122,7 @@ export default function PermissionsPage() {
                 setSplash(false);
                 return;
             }
-            if (micPerms == LocalPermStatus.INIT) {
-                setMicPerms(await Audio.getPermissionsAsync());
-            }
+            setMicPerms(await Audio.getPermissionsAsync());
             // both notif and location are initialized as null - if one is null the other is also null.
             if (notifPerms == null || locationPerms == null) {
                 setLocationPerms(LocalPermStatus.INIT);

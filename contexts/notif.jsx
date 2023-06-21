@@ -8,6 +8,7 @@ import * as Notifications from 'expo-notifications';
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./auth";
 import { LocalPermStatus } from "./permissions-status";
+import { useRouter } from "expo-router";
 
 const NotificationsContext = createContext({});
 
@@ -22,7 +23,7 @@ Notifications.setNotificationHandler({
         shouldShowAlert: true,
         shouldPlaySound: true,
         shouldSetBadge: false,
-    }),
+    })
 });
 
 async function registerForPushNotificationsAsync(setPermissionStatus) {
@@ -59,9 +60,10 @@ async function registerForPushNotificationsAsync(setPermissionStatus) {
 }
 
 export function NotificationsProvider({ children }) {
+    const router = useRouter();
     const { loggedIn } = useAuth();
     // exposes the status of the permissions fetch request
-    const [ permissionStatus, setPermissionStatus ] = useState(null);
+    const [ permissionStatus, setPermissionStatus ] = useState(LocalPermStatus.INIT);
     // expoPushToken is to be pushed to the supabase user_info table.
     const [ expoPushToken, setExpoPushToken ] = useState("");
     // notification is the physical notification from the app
@@ -79,16 +81,16 @@ export function NotificationsProvider({ children }) {
             });
         
             responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-                // TODO: this is where router linking will take place.
-                console.log(response);
+                if (response.notification.request.identifier == "recording") {
+                    router.push("/alert");
+                    console.log(response.notification.request.content.subtitle);
+                    response.notification.request.content.data.onPress();
+                } else {
+                    router.push("/contacts");
+                }
             });
-        
-            return () => {
-                Notifications.removeNotificationSubscription(notificationListener.current);
-                Notifications.removeNotificationSubscription(responseListener.current);
-            };
         }
-    }, [permissionStatus]);
+    }, [permissionStatus, router]);
 
     useEffect(() => {
         if (loggedIn && expoPushToken) {
