@@ -7,9 +7,9 @@ import * as Notifications from 'expo-notifications';
 
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./auth";
+import { useRecorder } from "./recording";
 import { LocalPermStatus } from "./permissions-status";
 import { useRouter } from "expo-router";
-import { useSnackbar } from "./snackbar";
 
 const NotificationsContext = createContext({});
 
@@ -27,7 +27,7 @@ Notifications.setNotificationHandler({
     })
 });
 
-async function registerForPushNotificationsAsync(setPermissionStatus, setMessage) {
+async function registerForPushNotificationsAsync(setPermissionStatus) {
     let token;
 
     if (Platform.OS === 'android') {
@@ -47,13 +47,11 @@ async function registerForPushNotificationsAsync(setPermissionStatus, setMessage
             finalStatus = status;
         }
         setPermissionStatus(finalStatus);
-        setMessage(finalStatus);
         if (finalStatus !== LocalPermStatus.GRANTED) {
             console.log('Failed to get push token for push notification!');
             return;
         }
-        token = (await Notifications.getExpoPushTokenAsync()).data;
-        setMessage(token);
+        token = (await Notifications.getExpoPushTokenAsync({ projectId: process.env.EAS_KEY })).data;
         console.log(token);
     } else {
         console.log('Must use physical device for Push Notifications');
@@ -63,8 +61,8 @@ async function registerForPushNotificationsAsync(setPermissionStatus, setMessage
 }
 
 export function NotificationsProvider({ children }) {
+    const { stopRecording } = useRecorder();
     const router = useRouter();
-    const { setMessage } = useSnackbar();
     const { loggedIn } = useAuth();
     // exposes the status of the permissions fetch request
     const [ permissionStatus, setPermissionStatus ] = useState(null);
@@ -77,7 +75,7 @@ export function NotificationsProvider({ children }) {
 
     useEffect(() => {
         if (permissionStatus == LocalPermStatus.INIT) {
-            registerForPushNotificationsAsync(setPermissionStatus, setMessage).then(token => setExpoPushToken(token));
+            registerForPushNotificationsAsync(setPermissionStatus).then(token => setExpoPushToken(token));
             
             notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
                 setNotification(notification);
@@ -88,18 +86,17 @@ export function NotificationsProvider({ children }) {
                 if (response.notification.request.identifier == "recording") {
                     router.push("/alert");
                     console.log(response.notification.request.content.subtitle);
-                    response.notification.request.content.data.onPress();
+                    stopRecording();
                 } else {
                     router.push("/contacts");
                 }
             });
         }
-    }, [permissionStatus, router]);
+    }, [permissionStatus, router, stopRecording]);
 
     useEffect(() => {
         if (loggedIn && expoPushToken) {
             console.log("Updating user token: " + expoPushToken);
-            setMessage("Updating user token: " + expoPushToken);
             (async () => {
                 const { error } = await supabase.from("user_info")
                     .update({ expo_token: expoPushToken })

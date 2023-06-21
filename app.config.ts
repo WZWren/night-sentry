@@ -23,6 +23,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         supportsTablet: true,
     },
     android: {
+        googleServicesFile: "./google-services.json",
         adaptiveIcon: {
             foregroundImage: './assets/adaptive-icon.png',
             backgroundColor: '#FFFFFF',

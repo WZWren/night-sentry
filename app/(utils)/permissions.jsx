@@ -3,13 +3,11 @@ import { View } from "react-native";
 import { useRouter } from "expo-router";
 import { Text, Button, ActivityIndicator } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Audio } from "expo-av";
 
 import { viewStyle } from "../../ui/style";
 import { useNotif } from "../../contexts/notif";
 import { useLocation } from "../../contexts/location";
 import { LocalPermStatus } from "../../contexts/permissions-status";
-import { useSnackbar } from "../../contexts/snackbar";
 
 function DisplayStatus(props) {
     const prompt = "We cannot request for the permission from the app. " +
@@ -103,31 +101,24 @@ async function checkIfFirstLaunch() {
 
 // we will use this PermissionsPage as a pseudo-splash page.
 export default function PermissionsPage() {
-    const { setMessage } = useSnackbar();
     const router = useRouter();
     const [ firstLaunch, setFirstLaunch ] = useState(true);
     const [ splash, setSplash ] = useState(true);
-    const [ micPerms, setMicPerms ] = useState(LocalPermStatus.INIT);
+    const { permissionStatus: micPerms, setPermissionStatus: setMicPerms } = useState(LocalPermStatus.INIT);
     const { permissionStatus: notifPerms, setPermissionStatus: setNotifPerms } = useNotif();
     const { permissionStatus: locationPerms, setPermissionStatus: setLocationPerms } = useLocation();
-
-    const handleMicPerms = async () => {
-        const { status } = await Audio.requestPermissionsAsync();
-        setMessage(status);
-        setMicPerms(status);
-    }
 
     useEffect(() => {
         (async () => {
             const firstLaunch = await checkIfFirstLaunch();
             setFirstLaunch(firstLaunch);
             if (firstLaunch) {
-                setMicPerms(await Audio.getPermissionsAsync());
                 setSplash(false);
                 return;
             }
             // both notif and location are initialized as null - if one is null the other is also null.
-            if (notifPerms == null || locationPerms == null) {
+            if (notifPerms == null || locationPerms == null || micPerms == null) {
+                setMicPerms(LocalPermStatus.INIT);
                 setLocationPerms(LocalPermStatus.INIT);
                 setNotifPerms(LocalPermStatus.INIT);
             }
@@ -136,7 +127,7 @@ export default function PermissionsPage() {
                 setSplash(false);
             }
         })();
-    }, [micPerms, notifPerms, locationPerms, setNotifPerms, setLocationPerms]);
+    }, [micPerms, notifPerms, locationPerms, setNotifPerms, setLocationPerms, setMicPerms ]);
 
     // if you are on this page, you came from a login - we only check for notifPerms and locationPerms, and only
     // redirect to the alerts page.
@@ -155,7 +146,7 @@ export default function PermissionsPage() {
                 ? <Splash />
                 : <AskPermissions 
                     perms={{ notifPerms, locationPerms, micPerms }}
-                    setPerms={{ setNotifPerms, setLocationPerms, handleMicPerms }}
+                    setPerms={{ setNotifPerms, setLocationPerms, setMicPerms }}
                     onPress={setFirstLaunch} />
             }
         </View>
