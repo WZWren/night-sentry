@@ -4,8 +4,8 @@ import { decode } from 'base64-arraybuffer';
 import * as Notifications from 'expo-notifications';
 import * as FileSystem from "expo-file-system";
 
-import { useAuth } from "../../contexts/auth";
-import { supabase } from "../../lib/supabase";
+import { useAuth } from "./auth";
+import { supabase } from "../lib/supabase";
 import { LocalPermStatus } from "./permissions-status";
 
 const RecorderContext = createContext({});
