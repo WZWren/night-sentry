@@ -86,7 +86,6 @@ export function NotificationsProvider({ children }) {
                 if (response.notification.request.identifier == "recording") {
                     router.push("/alert");
                     console.log(response.notification.request.content.subtitle);
-                    stopRecording();
                 } else {
                     router.push("/contacts");
                 }

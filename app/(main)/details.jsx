@@ -1,11 +1,14 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 import { useCallback, useState, useRef, useEffect } from "react";
-import { viewStyle } from "../../ui/style";
-import { Text } from "react-native-paper";
+import { Button, Text } from "react-native-paper";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import { Audio } from "expo-av";
+
 import { supabase } from "../../lib/supabase";
 import { epochToDate } from "../../lib/utils";
+import { viewStyle } from "../../ui/style";
+import Slider from "@react-native-community/slider";
 
 // we define a separate fetcher function here for when the user wants to get the most updated alert
 // - we want to give the user enough time to read the original alert so the user will not be disrupted by
@@ -22,6 +25,42 @@ async function fetchAlert(id) {
     return data[0].last_alert;
 }
 
+async function fetchAudio(id) {
+    const { data, error } = await supabase.storage
+        .from("audio")
+        .list(id, {
+            limit: 3,
+            offset: 0,
+            sortBy: { column: 'name', order: 'desc' },
+        });
+    if (error) {
+        console.log(`Failed to retrieve audio. ${error.message}`);
+        return [];
+    }
+    return data.map((fileObject) => `${id}/${fileObject.name}`);
+}
+
+async function getSignedUrl(file) {
+    const { data, error } = await supabase.storage
+        .from("audio")
+        .createSignedUrl(file, 60 * 60 * 24);
+    if (error) {
+        console.log(`Failed to get signed link. ${error.message}`);
+        return;
+    }
+    console.log(data);
+}
+
+function MediaPlayer(props) {
+    return (
+        <View style={viewStyle.rowViewCenter}>
+            <Slider style={{width: 200, height: 40}}/>
+        </View>
+    );
+}
+
+
+
 export default function AlertDetailsPage() {
     // payload is the query from userlist on the contacts page.
     // payload = { subscriber, info: { first_name, last_name, last_alert, alerts: {location} } }
@@ -29,13 +68,16 @@ export default function AlertDetailsPage() {
     // location is an object.
     const { id } = useLocalSearchParams();
     const [ alert, setAlert ] = useState(null);
+    const [ audio, setAudio ] = useState([]);
     const mapViewRef = useRef(null);
+    // const playbackObject = new Audio.Sound();
 
     useFocusEffect(
         useCallback(() => {
             fetchAlert(id).then((callback) => setAlert(callback));
-            return () => setAlert(null);
-        }, [id, setAlert])
+            fetchAudio(id).then((callback) => setAudio(callback));
+            return () => { setAlert(null); setAudio([]) };
+        }, [id])
     );
 
     useEffect(() => {
@@ -47,6 +89,12 @@ export default function AlertDetailsPage() {
             }, 1000);
         }
     }, [alert]);
+
+    useEffect(() => {
+        if (audio.length > 0) {
+            console.log(audio[0]);
+        }
+    }, [audio]);
 
     return (
         <View style={viewStyle.colContainer}>
@@ -69,6 +117,8 @@ export default function AlertDetailsPage() {
                     title={"Last Alert Location"}/>
                 }
             </MapView>
+            <Button onPress={() => getSignedUrl(audio[0])}>Test Url Grabbing</Button>
+            <MediaPlayer/>
         </View>
     );
 }

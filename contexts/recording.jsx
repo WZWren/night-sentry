@@ -45,7 +45,7 @@ export function RecorderProvider({children}) {
             await Notifications.scheduleNotificationAsync({
                 content: {
                     title: "Recording in progress...",
-                    subtitle: "Tap to stop the recording.",
+                    subtitle: "Tap to go to alerts page.",
                     autoDismiss: true,
                 },
                 identifier: "recording",
