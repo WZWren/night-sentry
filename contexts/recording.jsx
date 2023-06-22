@@ -42,6 +42,7 @@ export function RecorderProvider({children}) {
             });
     
             console.log('Starting recording..');
+            const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
             await Notifications.scheduleNotificationAsync({
                 content: {
                     title: "Recording in progress...",
@@ -51,7 +52,6 @@ export function RecorderProvider({children}) {
                 identifier: "recording",
                 trigger: null
             });
-            const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
             setRecording(recording);
             console.log('Recording started');
         } catch (err) {
@@ -66,6 +66,7 @@ export function RecorderProvider({children}) {
         await Audio.setAudioModeAsync({
           allowsRecordingIOS: false,
         });
+        Notifications.dismissNotificationAsync("recording");
         const uri = recording.getURI();
         console.log('Recording stopped and stored at', uri);
         const file = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
