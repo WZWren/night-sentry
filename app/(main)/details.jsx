@@ -101,7 +101,10 @@ function MediaPlayer(props) {
                         onDismiss={() => props.menu.setVisible(false)}
                         anchor={
                             <Button
-                                disabled={props.mediaHooks.loading}
+                                disabled={
+                                    props.url.length == 0
+                                    || props.mediaHooks.loading
+                                }
                                 mode="contained"
                                 onPress={() => props.menu.setVisible(true)}>
                                 Playback
@@ -126,7 +129,11 @@ function MediaPlayer(props) {
             </View>
             <View style={{...viewStyle.rowViewCenter, padding: 0}}>
                 <IconButton
-                    disabled={props.mediaHooks.unload && props.mediaHooks.loading}
+                    disabled={
+                        props.url.length == 0
+                        || props.mediaHooks.unload
+                        || props.mediaHooks.loading
+                    }
                     icon={
                         props.mediaHooks.playing
                         ? "pause"
@@ -217,7 +224,14 @@ export default function AlertDetailsPage() {
             playbackObject.unloadAsync();
             fetchAlert(id).then((callback) => setAlert(callback));
             fetchAudio(id).then((callback) => setAudio(callback));
-            return () => { setAlert(null); setAudio([]) };
+            return () => {
+                playbackObject.unloadAsync();
+                setIndex(null);
+                setUnload(true);
+                setEnded(false);
+                setAlert(null);
+                setAudio([])
+            };
         }, [id])
     );
 
