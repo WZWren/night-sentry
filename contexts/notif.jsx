@@ -7,7 +7,9 @@ import * as Notifications from 'expo-notifications';
 
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./auth";
+import { useRecorder } from "./recording";
 import { LocalPermStatus } from "./permissions-status";
+import { useRouter } from "expo-router";
 
 const NotificationsContext = createContext({});
 
@@ -22,7 +24,7 @@ Notifications.setNotificationHandler({
         shouldShowAlert: true,
         shouldPlaySound: true,
         shouldSetBadge: false,
-    }),
+    })
 });
 
 async function registerForPushNotificationsAsync(setPermissionStatus) {
@@ -49,7 +51,7 @@ async function registerForPushNotificationsAsync(setPermissionStatus) {
             console.log('Failed to get push token for push notification!');
             return;
         }
-        token = (await Notifications.getExpoPushTokenAsync()).data;
+        token = (await Notifications.getExpoPushTokenAsync({ projectId: process.env.EAS_KEY })).data;
         console.log(token);
     } else {
         console.log('Must use physical device for Push Notifications');
@@ -59,6 +61,8 @@ async function registerForPushNotificationsAsync(setPermissionStatus) {
 }
 
 export function NotificationsProvider({ children }) {
+    const { stopRecording } = useRecorder();
+    const router = useRouter();
     const { loggedIn } = useAuth();
     // exposes the status of the permissions fetch request
     const [ permissionStatus, setPermissionStatus ] = useState(null);
@@ -79,16 +83,15 @@ export function NotificationsProvider({ children }) {
             });
         
             responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-                // TODO: this is where router linking will take place.
-                console.log(response);
+                if (response.notification.request.identifier == "recording") {
+                    router.push("/alert");
+                    console.log(response.notification.request.content.subtitle);
+                } else {
+                    router.push("/contacts");
+                }
             });
-        
-            return () => {
-                Notifications.removeNotificationSubscription(notificationListener.current);
-                Notifications.removeNotificationSubscription(responseListener.current);
-            };
         }
-    }, [permissionStatus]);
+    }, [permissionStatus, router, stopRecording]);
 
     useEffect(() => {
         if (loggedIn && expoPushToken) {

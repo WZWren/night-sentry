@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { View } from "react-native";
-import { ActivityIndicator, Button, Text } from "react-native-paper";
+import { ActivityIndicator, Button, Text, IconButton, ProgressBar } from "react-native-paper";
 
 import { viewStyle } from "../../ui/style";
 import { useAuth } from "../../contexts/auth";
 import { supabase } from "../../lib/supabase";
 import { useLocation } from "../../contexts/location";
+import { useRecorder } from "../../contexts/recording";
 
 /**
  * Alert Page for the app. This will be the main page for the app, and is the first
@@ -15,6 +16,7 @@ import { useLocation } from "../../contexts/location";
 export default function AlertPage() {
     const { loggedIn } = useAuth();
     const { location } = useLocation();
+    const { startRecording, stopRecording, recording } = useRecorder();
     const [ statusMessage, setMessage ] = useState("Awaiting input...");
     const [ loading, setLoading ] = useState(false);
 
@@ -45,6 +47,22 @@ export default function AlertPage() {
             >
                 Distress Signal
             </Button>
+            <View style={viewStyle.rowViewCenter}>
+                <View style={{flex: 1}} />
+                <IconButton
+                    icon={recording ? "stop" : "record"}
+                    mode="outlined"
+                    size={48}
+                    iconColor="#880000"
+                    onPress={recording ? (() => {}) : startRecording}
+                    onLongPress={recording ? stopRecording : (() => {})}
+                    style={{ flex: 1 }} />
+                <View style={{...viewStyle.colContainer, flex: 3, gap: 12}}>
+                    <ProgressBar indeterminate={recording} color="#880000" style={{ width: 150 }}/>
+                    <Text variant="labelLarge">{recording ? "Hold to Stop Recording" : "Tap to Record"}</Text>
+                </View>
+                <View style={{flex: 1}} />
+            </View>
         </View>
     );
 }
