@@ -35,7 +35,7 @@ export default function DrawerRoot() {
                 name="alert"
                 options={{
                     drawerLabel: "Alert Dashboard",
-                    title: "Distress Signal",
+                    title: "Send a Distress Signal",
                     swipeEnabled: !toggleDrawer
                 }}/>
             <Drawer.Screen
@@ -43,6 +43,13 @@ export default function DrawerRoot() {
                 options={{
                     drawerLabel: "User Settings",
                     title: "User Profile",
+                    swipeEnabled: !toggleDrawer
+                }}/>
+            <Drawer.Screen
+                name="dashboard"
+                options={{
+                    drawerLabel: "NIGHTSENTRY Feed",
+                    title: "Newsfeed for this Area",
                     swipeEnabled: !toggleDrawer
                 }}/>
             <Drawer.Screen
