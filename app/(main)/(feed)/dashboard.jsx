@@ -1,9 +1,11 @@
 import { View, FlatList, Image } from "react-native";
 import { Text, Chip, Card, IconButton } from "react-native-paper";
-import { viewStyle } from "../../ui/style";
+import { viewStyle } from "../../../ui/style";
 import { useState } from "react";
+import { useRouter } from "expo-router";
 
 export default function DashboardPage() {
+    const router = useRouter();
     const [ active, setActive ] = useState(ListTabs.TOP);
 
     return (
@@ -33,14 +35,24 @@ export default function DashboardPage() {
             </View>
             <FlatList
                 data={["The FitnessGram Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues.", "2", "3"]}
-                renderItem={FeedCard}
+                renderItem={({item}) => FeedCard(item, router)}
                 style={{ width: "90%" }}/>
         </View>
     );
 }
 
-function FeedCard({item}) {
+function FeedCard(item, router) {
     const uri = item == "2" ? null : "https://spiritislandwiki.com/images/thumb/4/4e/Ember-Eyed_Behemoth.png/400px-Ember-Eyed_Behemoth.png";
+
+    const handleReadMore = () => {
+        router.push({
+            pathname: '/focusedfeed',
+            params: {
+                title: ":skull_emoji:",
+            }
+        })
+    }
+
     return (
         <Card style={{ margin: 4 }}>
             <Card.Title title="Card Title" subtitle="timestamp"/>
@@ -51,7 +63,7 @@ function FeedCard({item}) {
             <Card.Actions>
                 <Text variant="labelSmall" style={{ flex: 5 }}>Verification Score: {100}</Text>
                 <IconButton icon="check-decagram" style={{ flex: 1 }}/>
-                <IconButton icon="dots-vertical" style={{ flex: 1 }}/>
+                <IconButton onPress={handleReadMore} icon="dots-vertical" style={{ flex: 1 }}/>
             </Card.Actions>
         </Card>
     );
