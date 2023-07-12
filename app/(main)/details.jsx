@@ -6,7 +6,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { Audio } from "expo-av";
 
 import { supabase } from "../../lib/supabase";
-import { epochToDate } from "../../lib/utils";
+import { extractTimestamp } from "../../lib/utils";
 import { viewStyle } from "../../ui/style";
 import Slider from "@react-native-community/slider";
 
@@ -265,7 +265,7 @@ export default function AlertDetailsPage() {
                     url={audio}
                     audio={playbackObject}
                     mediaHooks={mediaHooks} />
-                <Text>Alert last received at: {epochToDate(alert)}</Text>
+                <Text>Alert last received at: {extractTimestamp(alert)}</Text>
                 <Text>{alert && JSON.stringify()}</Text>
                 <MapView
                     ref={mapViewRef}
