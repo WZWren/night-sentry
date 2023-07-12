@@ -3,7 +3,7 @@ import { Text, Card, IconButton, ActivityIndicator, TouchableRipple } from "reac
 
 import { viewStyle } from "./style.js";
 import { supabase } from "../lib/supabase";
-import { epochToDate } from "../lib/utils.js";
+import { extractTimestamp } from "../lib/utils.js";
 
 /**
  * User area list renders the main list area for the individual items.
@@ -52,7 +52,7 @@ export function UserListItem({ item }, router) {
             <TouchableRipple borderless onPress={redirectToAlert}>
                 <Card.Title
                     title={item.info.first_name + " " + item.info.last_name}
-                    subtitle={"Last alert: " + epochToDate(item.info.alerts)}/>
+                    subtitle={"Last alert: " + extractTimestamp(item.info.alerts)}/>
             </TouchableRipple>
         </Card>
     );
