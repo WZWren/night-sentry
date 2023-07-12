@@ -64,8 +64,6 @@ export default function ContactsPage() {
     const [ refreshPending, setRefreshPending ] = useState(true);
     const [ loadingSignout, setLoadingSignout ] = useState(false);
 
-    console.log("Index loading...");
-
     useEffect(() => {
         // this hook should only trigger if the user is actually logged in.
         if (loggedIn) {
@@ -92,6 +90,28 @@ export default function ContactsPage() {
             fetchSubscriber(setListButtons, setPending, setRefreshPending, loggedIn, false);
         }
     }, [refreshPending, loggedIn]);
+
+    // the unsubscription on logout is handled collectively by a removeAllChannels call during logout.
+    useEffect(() => {
+        if (loggedIn) {
+            console.log(`channel for request subscribed for ${loggedIn.id}`);
+            supabase.channel('requests_channel')
+                .on('postgres_changes',
+                    { event: '*', schema: 'public', table: 'close_contacts', filter: `publisher=eq.${loggedIn.id}` },
+                    (payload) => {
+                        console.log(`${loggedIn.id} receives change in close contacts: ${payload}`);
+                        setRefreshPending(true);
+                        setRefreshContact(true);
+                    }
+                ).subscribe((status, error) => {
+                    console.log(status);
+                    if (error) {
+                        console.log(error.message);
+                    }
+                });
+        }
+        return async () => await supabase.removeChannel('requests_channel');
+    }, [loggedIn]);
 
     // Handles the user signout.
     const handleSignout = async () => {

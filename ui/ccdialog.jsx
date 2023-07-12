@@ -50,7 +50,7 @@ async function handleNewCC(user, email, setVisible, setLoading, setError) {
             setError("Cannot be a close contact of yourself.");
             break;
         default:
-            setError(`Unknown error: ${insertError.message}`);
+            setError(`${insertError.message}`);
     }
     setLoading(false);
 }

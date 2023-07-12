@@ -87,18 +87,12 @@ export function PendingListItem({ item }, loggedIn, refreshContact, refreshPendi
 
     async function handleAccept(publisher, subscriber, refreshContact, refreshPending) {
         setDisabled(true);
-        // TODO: Move the insertion to the backend.
-        const { error: updateError } = await supabase.from("close_contacts")
-            .update({ confirmed: true })
-            .eq("publisher", publisher)
-            .eq("subscriber", subscriber);
         const { error: insertError } = await supabase.from("close_contacts").insert({
             publisher: subscriber,
             subscriber: publisher,
             confirmed: true
         });
-        if (updateError || insertError) {
-            console.log(updateError);
+        if (insertError) {
             console.log(insertError);
         }
         refreshContact(true);
