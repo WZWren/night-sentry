@@ -1,13 +1,42 @@
 import { Text, View } from "react-native";
 import { screen, render, act, fireEvent } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/src/testing-library";
+import { rest } from "msw";
+import { setupServer } from "msw/node";
+
+import 'react-native-url-polyfill/auto';
+import { createClient } from "@supabase/supabase-js";
+
 import { AuthProvider, useAuth } from "../../contexts/auth";
 import * as Snackbar from "../../contexts/snackbar";
-import { supabase } from "../../lib/supabase";
+import * as DB from "../../lib/supabase";
 import LoginPage from "../../app/(auth)/login";
 import Register from "../../app/(auth)/register";
 
 const URL = process.env.PROJECT_URL;
+const KEY = process.env.PROJECT_KEY;
+
+// this mirrors the internal implementation of resolveFetch for Supabase.
+var _fetch = async (...args) => await (await import('cross-fetch')).fetch(...args);
+const fetcher = (...args) => _fetch(...args);
+
+const replacement = createClient(URL, KEY, {
+    auth: {
+        persistSession: false,
+    },
+    global: {
+        fetch: fetcher,
+    }
+});
+
+const server = setupServer(
+    rest.post(`${URL}/auth/v1/token`, (req, res, ctx) => {
+        return res(
+            ctx.status(200),
+            ctx.json(response)
+        );
+    })
+);
 
 const TestAuthComponent = () => {
     const { loggedIn } = useAuth();
@@ -34,7 +63,7 @@ it("should not make a call to the server if fields are blank", async () => {
     const snackbar = jest.spyOn(Snackbar, "useSnackbar").mockImplementation(() => ({
         setMessage: (input) => {}
     }));
-    const spy = jest.spyOn(supabase.auth, "signInWithPassword");
+    const spy = jest.spyOn(DB.supabase.auth, "signInWithPassword");
     const renderPage = render(<LoginPage/>);
     const input = "placeholder";
 
@@ -42,13 +71,14 @@ it("should not make a call to the server if fields are blank", async () => {
     fireEvent.press(signInBtn);
 
     expect(spy).not.toHaveBeenCalled();
+    renderPage.unmount();
 })
 
 it("should make a call to the supabase server on login", async () => {
     const snackbar = jest.spyOn(Snackbar, "useSnackbar").mockImplementation(() => ({
         setMessage: (input) => {}
     }));
-    const spy = jest.spyOn(supabase.auth, "signInWithPassword");
+    const spy = jest.spyOn(DB.supabase.auth, "signInWithPassword");
     const renderPage = render(<LoginPage/>);
     const input = "placeholder";
 
@@ -78,21 +108,23 @@ describe("Signup Page", () => {
         fireEvent.press(signUpLink);
 
         expect(renderPage.getSegments()[1]).toBe("register");
+        renderPage.unmount();
     });
 
     it("should not call supabase with empty inputs", async () => {
-        render(<Register />);
-        const spy = jest.spyOn(supabase.auth, "signUp");
+        const renderPage = render(<Register />);
+        const spy = jest.spyOn(DB.supabase.auth, "signUp");
         const signUpBtn = await screen.findByText("Sign-up");
         fireEvent.press(signUpBtn);
 
         expect(spy).not.toBeCalled();
         spy.mockReset();
+        renderPage.unmount();
     });
 
     it("should not call supabase if passwords do not match", async () => {
-        render(<Register />);
-        const spy = jest.spyOn(supabase.auth, "signUp");
+        const renderPage = render(<Register />);
+        const spy = jest.spyOn(DB.supabase.auth, "signUp");
         const input = "placeholder";
         const differingInput = "holderplace";
         const mailField = await screen.findByPlaceholderText("Email");
@@ -111,17 +143,13 @@ describe("Signup Page", () => {
 
         expect(spy).not.toBeCalled();
 
-        fireEvent.changeText(mailField, "");
-        fireEvent.changeText(firstName, "");
-        fireEvent.changeText(lastName , "");
-        fireEvent.changeText(passField, "");
-        fireEvent.changeText(repwField, "");
         spy.mockReset();
+        renderPage.unmount();
     });
 
     it("should call the supabase server on signup, if all client-side regex passes", async () => {
-        render(<Register />);
-        const spy = jest.spyOn(supabase.auth, "signUp");
+        const renderPage = render(<Register />);
+        const spy = jest.spyOn(DB.supabase.auth, "signUp");
         const input = "placeholder";
         const mailField = await screen.findByPlaceholderText("Email");
         const firstName = await screen.findByPlaceholderText("First Name");
@@ -139,23 +167,17 @@ describe("Signup Page", () => {
 
         expect(spy).toBeCalled();
 
-        fireEvent.changeText(mailField, "");
-        fireEvent.changeText(firstName, "");
-        fireEvent.changeText(lastName , "");
-        fireEvent.changeText(passField, "");
-        fireEvent.changeText(repwField, "");
         spy.mockReset();
+        renderPage.unmount();
     })
 });
 
-
 describe("AuthProvider", () => {
     it('provides logged-in data to the context as expected', async () => {
-        const spy = jest.spyOn(global, 'fetch').mockImplementation(
-            async (input) => {
-                return new Response(JSON.stringify(response));
-            }
-        )
+        server.listen();
+
+        // this replaces the supabase object with one that has an exposed fetcher.
+        jest.replaceProperty(DB, "supabase", replacement);
 
         const { getByTestId } = render(
             <AuthProvider>
@@ -164,15 +186,15 @@ describe("AuthProvider", () => {
         );
 
         await act(async () => {
-            const { data } = await supabase.auth.signInWithPassword({ email: process.env.TEST_MAIL, password: "password" });
-            if (data) {
-                console.log(data);
-            }
+            await DB.supabase.auth.signInWithPassword({ email: "badmail", password: "password" });
         });
 
         const textElement = getByTestId("log_value");
-        console.log(textElement.children[0]);
-        expect(textElement.children[0]).toBeTruthy();
+        expect(textElement.children[0]).toBe("test_id_here");
+
+        screen.unmount();
+        jest.restoreAllMocks();
+        server.close();
     }, 20000);
 });
 
