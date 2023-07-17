@@ -30,11 +30,30 @@ const replacement = createClient(URL, KEY, {
 });
 
 const server = setupServer(
-    rest.post(`${URL}/auth/v1/token`, (req, res, ctx) => {
+    rest.post(`${URL}/auth/v1/token`, async (req, res, ctx) => {
+        const { email } = await req.json();
+        if (email === "placeholder") {
+            return res(
+                ctx.status(200),
+                ctx.json({
+                    error: "invalid_grant",
+                    error_description: "Invalid login credentials"
+                })
+            );
+        }
+
         return res(
             ctx.status(200),
             ctx.json(response)
         );
+    }),
+    rest.get(`${URL}/rest/v1/close_contacts`, (req, res, ctx) => {
+        // As a consequence of log-in, a GET to close contacts is called by AuthProvider.
+        // we add this here to simply intercept all calls to this link.
+        return res(
+            ctx.status(404),
+            ctx.json({ message: "IGNORE" })
+        )
     })
 );
 
@@ -48,51 +67,63 @@ const TestAuthComponent = () => {
     );
 }
 
-test("Render the Login Page", async () => {
-    const renderPage = render(<LoginPage/>);
-    const tree = renderPage.toJSON();
-    const signInText = await screen.findByText("Log in...");
-    const signInBtn = await screen.findByText("Login");
-    expect(signInText).toBeTruthy();
-    expect(signInBtn).toBeTruthy();
-    expect(tree).toMatchSnapshot();
-    renderPage.unmount();
+beforeAll(() => {
+    server.listen();
+    // suppress console.log messages - errors for jest are pushed in console.error and console.warn, so
+    // this should not effect the jest testing.
+    jest.spyOn(console, "log").mockImplementation();
+    jest.spyOn(Snackbar, "useSnackbar").mockImplementation(() => ({
+        setMessage: (input) => {}
+    }));
 });
 
-it("should not make a call to the server if fields are blank", async () => {
-    const snackbar = jest.spyOn(Snackbar, "useSnackbar").mockImplementation(() => ({
-        setMessage: (input) => {}
-    }));
-    const spy = jest.spyOn(DB.supabase.auth, "signInWithPassword");
-    const renderPage = render(<LoginPage/>);
-    const input = "placeholder";
+afterAll(() => {
+    server.close();
+    jest.restoreAllMocks();
+});
 
-    const signInBtn = await screen.findByText("Login");
-    fireEvent.press(signInBtn);
+describe("Login Page", () => {
+    afterEach(() => {
+        screen.unmount();
+    });
 
-    expect(spy).not.toHaveBeenCalled();
-    renderPage.unmount();
-})
+    test("Render the Login Page", async () => {
+        const renderPage = render(<LoginPage/>);
+        const tree = renderPage.toJSON();
+        const signInText = await screen.findByText("Log in...");
+        const signInBtn = await screen.findByText("Login");
+        expect(signInText).toBeTruthy();
+        expect(signInBtn).toBeTruthy();
+        expect(tree).toMatchSnapshot();
+    });
 
-it("should make a call to the supabase server on login", async () => {
-    const snackbar = jest.spyOn(Snackbar, "useSnackbar").mockImplementation(() => ({
-        setMessage: (input) => {}
-    }));
-    const spy = jest.spyOn(DB.supabase.auth, "signInWithPassword");
-    const renderPage = render(<LoginPage/>);
-    const input = "placeholder";
+    it("should not make a call to the server if fields are blank", async () => {
+        const spy = jest.spyOn(DB.supabase.auth, "signInWithPassword");
+        render(<LoginPage/>);
 
-    const mailField = await screen.findByPlaceholderText("Email");
-    const passField = await screen.findByPlaceholderText("Password");
-    const signInBtn = await screen.findByText("Login");
-    fireEvent.changeText(mailField, input);
-    fireEvent.changeText(passField, input);
-    fireEvent.press(signInBtn);
+        const signInBtn = await screen.findByText("Login");
+        act(() => { fireEvent.press(signInBtn) });
 
-    expect(spy).toHaveBeenCalled();
+        expect(spy).not.toHaveBeenCalled();
+        spy.mockRestore();
+    });
 
-    renderPage.unmount();
-    jest.clearAllMocks();
+    it("should make a call to the supabase server if fields are populated", async () => {
+        const spy = jest.spyOn(DB.supabase.auth, "signInWithPassword");
+        render(<LoginPage/>);
+        const input = "placeholder";
+
+        const mailField = await screen.findByPlaceholderText("Email");
+        const passField = await screen.findByPlaceholderText("Password");
+        const signInBtn = await screen.findByText("Login");
+        fireEvent.changeText(mailField, input);
+        fireEvent.changeText(passField, input);
+        fireEvent.press(signInBtn);
+
+        expect(spy).toHaveBeenCalled();
+
+        spy.mockRestore();
+    });
 });
 
 describe("Signup Page", () => {
@@ -102,13 +133,16 @@ describe("Signup Page", () => {
         }));
     });
 
+    afterEach(() => {
+        screen.unmount();
+    });
+
     it("should go to signup page when signup link is pressed", async () => {
         const renderPage = renderRouter();
         const signUpLink = await screen.findByText("Sign up");
         fireEvent.press(signUpLink);
 
         expect(renderPage.getSegments()[1]).toBe("register");
-        renderPage.unmount();
     });
 
     it("should not call supabase with empty inputs", async () => {
@@ -119,7 +153,6 @@ describe("Signup Page", () => {
 
         expect(spy).not.toBeCalled();
         spy.mockReset();
-        renderPage.unmount();
     });
 
     it("should not call supabase if passwords do not match", async () => {
@@ -144,7 +177,6 @@ describe("Signup Page", () => {
         expect(spy).not.toBeCalled();
 
         spy.mockReset();
-        renderPage.unmount();
     });
 
     it("should call the supabase server on signup, if all client-side regex passes", async () => {
@@ -168,14 +200,11 @@ describe("Signup Page", () => {
         expect(spy).toBeCalled();
 
         spy.mockReset();
-        renderPage.unmount();
     })
 });
 
 describe("AuthProvider", () => {
     it('provides logged-in data to the context as expected', async () => {
-        server.listen();
-
         // this replaces the supabase object with one that has an exposed fetcher.
         jest.replaceProperty(DB, "supabase", replacement);
 
@@ -194,7 +223,6 @@ describe("AuthProvider", () => {
 
         screen.unmount();
         jest.restoreAllMocks();
-        server.close();
     }, 20000);
 });
 

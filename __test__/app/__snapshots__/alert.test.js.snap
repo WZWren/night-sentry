@@ -40,6 +40,7 @@ exports[`should render properly 1`] = `
           ],
         ]
       }
+      testID="status_msg"
     >
       Awaiting input...
     </Text>
@@ -233,7 +234,7 @@ exports[`should render properly 1`] = `
           "width": 64,
         }
       }
-      testID="icon-button-container-outer-layer"
+      testID="recordBtn-container-outer-layer"
     >
       <View
         collapsable={false}
@@ -255,7 +256,7 @@ exports[`should render properly 1`] = `
             "shadowRadius": 0,
           }
         }
-        testID="icon-button-container"
+        testID="recordBtn-container"
       >
         <View
           accessibilityComponentType="button"
@@ -316,9 +317,44 @@ exports[`should render properly 1`] = `
               ],
             ]
           }
-          testID="icon-button"
+          testID="recordBtn"
         >
-          <Text />
+          <Text
+            accessibilityElementsHidden={true}
+            allowFontScaling={false}
+            importantForAccessibility="no-hide-descendants"
+            pointerEvents="none"
+            selectable={false}
+            style={
+              [
+                {
+                  "color": "#880000",
+                  "fontSize": 48,
+                },
+                [
+                  {
+                    "lineHeight": 48,
+                    "transform": [
+                      {
+                        "scaleX": 1,
+                      },
+                    ],
+                  },
+                  {
+                    "backgroundColor": "transparent",
+                  },
+                ],
+                {
+                  "fontFamily": "material-community",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                {},
+              ]
+            }
+          >
+            󰑊
+          </Text>
         </View>
       </View>
     </View>
