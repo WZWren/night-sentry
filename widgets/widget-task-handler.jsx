@@ -29,7 +29,10 @@ export async function widgetTaskHandler(props) {
             break;
 
         case 'WIDGET_CLICK':
-            // Not needed for now
+            if (props.clickAction === "DISTRESS") {
+                console.log("You pressed the widget button!");
+            }
+            props.renderWidget(<Widget />);
             break;
 
         default:
