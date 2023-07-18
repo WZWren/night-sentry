@@ -46,13 +46,8 @@ export async function widgetTaskHandler(props) {
                 //     user_id: loggedIn.id,
                 //     location: location,
                 // });
-                const { status } = await Location.requestForegroundPermissionsAsync();
-                if (status == "granted") {
-                    console.log("You pressed the widget button!");
-                    console.log((await Location.getCurrentPositionAsync()).coords.longitude);
-                } else {
-                    console.log("Location fetching failed.");
-                }
+                console.log((await Location.getLastKnownPositionAsync()).coords.longitude);
+                console.log("You pressed the widget button!");
             }
             props.renderWidget(<Widget />);
             break;
@@ -61,3 +56,62 @@ export async function widgetTaskHandler(props) {
             break;
     }
 }
+
+
+/*
+--- There is overlaps between usage of tasks and the tutorial on it for TaskManager ---
+--- This is due to the incompatibility of Tasks with Android 13 that was discovered early on. ---
+--- location.jsx, useEffect hook for LocationProvider ---
+useEffect(() => {
+    if (permissionStatus == LocalPermStatus.INIT) {
+        (async () => {
+            let { foregroundStatus } = await Location.requestForegroundPermissionsAsync();
+            if (foregroundStatus !== LocalPermStatus.GRANTED) {
+            console.log('Permission to access location was denied/not accepted yet.');
+                setPermissionStatus(foregroundStatus);
+                return;
+            }
+            let { backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
+            setPermissionStatus(backgroundStatus);
+            if (backgroundStatus !== LocalPermStatus.GRANTED) {
+                console.log('Permissions not fully granted.');
+                return;
+            }
+
+            Location.watchPositionAsync(
+                LOCATION_SETTINGS,
+                (callback) => setLocation(callback)
+            );
+        })();
+    }
+}, [permissionStatus]);
+
+--- index.jsx, in Global JS Scope ---
+TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
+    if (error) {
+        console.error(error.message);
+        return;
+    }
+    if (data) {
+        const { locations } = data;
+        console.log('Received new locations', locations);
+        AsyncStorage.setItem("task-location", JSON.stringify(locations[0]));
+        return;
+    }
+});
+
+--- widget-task-handler.jsx, in CASE WIDGET CLICK ---
+--- code for this section is experimental, but we were unable to get ---
+--- the required background location permissions to test it ---
+if (TaskManager.isTaskDefined(LOCATION_TASK_NAME)) {
+    console.log("Task is defined");
+}
+await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
+    accuracy: Location.Accuracy.Balanced,
+});
+if (await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME)) {
+    console.log("Task is registered");
+}
+const location = await AsyncStorage.getItem("task-location");
+const locJson = location == null ? {} : JSON.parse(location);
+*/
