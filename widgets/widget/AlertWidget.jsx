@@ -9,27 +9,30 @@ export function AlertWidget() {
                 width: 'match_parent',
                 justifyContent: 'center',
                 alignItems: 'center',
-                backgroundColor: '#555555',
+                backgroundColor: '#111111',
                 borderRadius: 16,
+                flexGap: 8
             }} >
             <TextWidget
                 text="Send an alert to your close contacts."
                 style={{
-                    fontSize: 20,
+                    fontSize: 32,
                     color: '#dddddd',
                 }} />
             <FlexWidget
                 style={{
-                    width: "wrap_content",
+                    height: "50%",
+                    width: "50%",
                     justifyContent: 'center',
                     alignItems: 'center',
-                    backgroundColor: '#000000',
+                    backgroundColor: '#444444',
+                    borderRadius: 8
                 }}
                 clickAction="DISTRESS" >
                 <TextWidget
                     text="Distress Signal"
                     style={{
-                        fontSize: 20,
+                        fontSize: 28,
                         color: '#cccccc',
                     }} />
             </FlexWidget>
