@@ -1,14 +1,15 @@
 import React from 'react';
-import "react-native-url-polyfill";
+import "react-native-url-polyfill/auto";
 import { AlertWidget } from './widget/AlertWidget';
 import * as Location from "expo-location";
 import { createClient } from '@supabase/supabase-js';
+import { epochToDate } from '../lib/utils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const URL = process.env.PROJECT_URL;
 const KEY = process.env.PROJECT_KEY;
 
 const nameToWidget = {
-    // Hello will be the **name** with which we will reference our widget.
     Alert: AlertWidget
 };
 
@@ -19,7 +20,13 @@ export async function widgetTaskHandler(props) {
 
     switch (props.widgetAction) {
         case 'WIDGET_ADDED':
-            props.renderWidget(<Widget />);
+            props.renderWidget(
+                <Widget
+                    {...widgetInfo}
+                    timestamp={"No recent alerts sent from widget."}
+                    isLocked={true}
+                />
+            );
             break;
 
         case 'WIDGET_UPDATE':
@@ -35,21 +42,82 @@ export async function widgetTaskHandler(props) {
             break;
 
         case 'WIDGET_CLICK':
-            if (props.clickAction === "DISTRESS") {
-                // const supabase = createClient(URL, KEY, {
-                //     auth: {
-                //         autoRefreshToken: false,
-                //         storage: AsyncStorage,
-                //     }
-                // });
-                // const { error } = await supabase.from("alerts").insert({
-                //     user_id: loggedIn.id,
-                //     location: location,
-                // });
-                console.log((await Location.getLastKnownPositionAsync()).coords.longitude);
-                console.log("You pressed the widget button!");
+            if (props.clickAction === "UNLOCK") {
+                props.renderWidget(
+                    <Widget
+                        {...widgetInfo}
+                        timestamp={props.clickActionData?.timestamp}
+                        isLocked={false}
+                        isLoading={false}
+                    />
+                );
+            } else if (props.clickAction === "LOCK") {
+                props.renderWidget(
+                    <Widget
+                        {...widgetInfo}
+                        timestamp={props.clickActionData?.timestamp}
+                        isLocked={true}
+                        isLoading={false}
+                    />
+                );
+            } else if (props.clickAction === "DISTRESS") {
+                // immediately set the widget to a loading state, while
+                // the handler handles the rest of the widget process.
+                props.renderWidget(
+                    <Widget
+                        {...widgetInfo}
+                        timestamp={props.clickActionData?.timestamp}
+                        isLocked={false}
+                        isLoading={true}
+                    />
+                );
+                console.log("Rendered the loading screen.");
+
+                const supabase = createClient(URL, KEY, {
+                    auth: {
+                        autoRefreshToken: false,
+                        storage: AsyncStorage,
+                    }
+                });
+
+                console.log("Client created.");
+
+                const loginSession = await supabase.auth.getSession();
+                if (loginSession.data.session == null) {
+                    props.renderWidget(
+                        <Widget
+                            {...widgetInfo}
+                            timestamp={"Alert failed to send - no active session."}
+                            isLocked={true}
+                            isLoading={false}
+                        />
+                    );
+                    break;
+                }
+                const { error } = await supabase.from("alerts").insert({
+                    user_id: loginSession.data.session.user.id,
+                    location: await Location.getLastKnownPositionAsync(),
+                });
+                if (error) {
+                    props.renderWidget(
+                        <Widget
+                            {...widgetInfo}
+                            timestamp={error.message}
+                            isLocked={true}
+                            isLoading={false}
+                        />
+                    );
+                } else {
+                    props.renderWidget(
+                        <Widget
+                            {...widgetInfo}
+                            timestamp={epochToDate(Date.now())}
+                            isLocked={true}
+                            isLoading={false}
+                        />
+                    );
+                }
             }
-            props.renderWidget(<Widget />);
             break;
 
         default:
