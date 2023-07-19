@@ -46,13 +46,6 @@ export default function DrawerRoot() {
                     swipeEnabled: !toggleDrawer
                 }}/>
             <Drawer.Screen
-                name="widget_preview"
-                options={{
-                    drawerLabel: "Preview Widget Page (REMOVE ON PRODUCTION)",
-                    title: "Widget Preview",
-                    swipeEnabled: !toggleDrawer
-                }}/>
-            <Drawer.Screen
                 name="details"
                 options={{
                     title,
