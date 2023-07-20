@@ -81,7 +81,7 @@ export function CCDialog({ visible, setVisible }) {
                         onChangeText={setEmail}
                         style={{ margin: 4 }}/>
                     <View style={{ minHeight: 30, alignItems: "center"}}>
-                        {!loading && <Text variant="labelLarge">{error}</Text>}
+                        {!loading && <Text variant="labelLarge" testID="error_msg">{error}</Text>}
                         {loading && <ActivityIndicator/>}
                     </View>
                 </Dialog.Content>

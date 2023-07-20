@@ -22,10 +22,18 @@ function useProtectedRoute(loggedIn) {
         const inAuthGroup = segments[0] === "(auth)";
         if (!loggedIn && !inAuthGroup) {
             console.log("Routing to Login...");
-            router.replace("/login");
+            // this works around a newly introduced bug in Expo Router 2.0, where
+            // no navigator is available to redirect to the proper route.
+            // Only works for Android. For iOS, the workaround wrapper is:
+            // setTimeout(() => router.replace(...), 1);
+            setImmediate(() => {
+                router.replace("/login");
+            });
         } else if (loggedIn && inAuthGroup) {
             console.log("Routing to Alert...");
-            router.replace("/permissions");
+            setImmediate(() => {
+                router.replace("/permissions");
+            });
         }
     }, [loggedIn, segments, router]);
 }

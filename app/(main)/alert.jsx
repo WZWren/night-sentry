@@ -33,7 +33,7 @@ export default function AlertPage() {
     return (
         <View style={viewStyle.colContainer}>
             <View style={{ minHeight: 40 }}>
-                {!loading && <Text variant="headlineSmall">{statusMessage}</Text>}
+                {!loading && <Text variant="headlineSmall" testID="status_msg">{statusMessage}</Text>}
                 {loading && <ActivityIndicator/>}
             </View>
             <Button
@@ -56,7 +56,8 @@ export default function AlertPage() {
                     iconColor="#880000"
                     onPress={recording ? (() => {}) : startRecording}
                     onLongPress={recording ? stopRecording : (() => {})}
-                    style={{ flex: 1 }} />
+                    style={{ flex: 1 }}
+                    testID="recordBtn" />
                 <View style={{...viewStyle.colContainer, flex: 3, gap: 12}}>
                     <ProgressBar indeterminate={recording} color="#880000" style={{ width: 150 }}/>
                     <Text variant="labelLarge">{recording ? "Hold to Stop Recording" : "Tap to Record"}</Text>

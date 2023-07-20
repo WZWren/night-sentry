@@ -1,7 +1,8 @@
 module.exports = {
     "env": {
         "es2021": true,
-        "node": true
+        "node": true,
+        "jest/globals": true
     },
     "extends": [
         "eslint:recommended",
@@ -16,7 +17,8 @@ module.exports = {
     },
     "plugins": [
         "react",
-        "react-hooks"
+        "react-hooks",
+        "jest"
     ],
     "rules": {
         "react/prop-types": "off",
