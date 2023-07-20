@@ -64,6 +64,12 @@ export default function DrawerRoot() {
                     title,
                     drawerItemStyle: { display: 'none' }
                 }}/>
+            <Drawer.Screen
+                name="dashboard/newpost"
+                options={{
+                    title: "Submit a New Feed",
+                    drawerItemStyle: { display: 'none' }
+                }}/>
         </Drawer>
     );
 }

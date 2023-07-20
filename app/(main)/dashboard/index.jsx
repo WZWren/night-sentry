@@ -31,7 +31,7 @@ export default function DashboardPage() {
                     Nearby
                 </Chip>
                 <IconButton
-                    onPress={() => {}}
+                    onPress={() => router.push("/dashboard/newpost")}
                     icon="newspaper-plus"
                     style={{flex: 1}} />
             </View>
