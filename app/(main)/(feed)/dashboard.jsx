@@ -7,32 +7,33 @@ import { epochToDate } from "../../../lib/utils";
 
 export default function DashboardPage() {
     const router = useRouter();
-    const [ active, setActive ] = useState(ListTabs.TOP);
+    const [ active, setActive ] = useState(ListTabs.ALL);
 
     return (
         <View style={viewStyle.colContainerStart}>
             <View style={viewStyle.rowViewCenter}>
+                <IconButton
+                    onPress={() => {}}
+                    icon="reload"
+                    style={{flex: 1}} />
                 <Chip
                     showSelectedOverlay
-                    selected={active == ListTabs.TOP}
-                    onPress={() => setActive(ListTabs.TOP)}
-                    style={{flex: 1}}>
-                    Verified
+                    selected={active == ListTabs.ALL}
+                    onPress={() => setActive(ListTabs.ALL)}
+                    style={{flex: 4}}>
+                    All Feed
                 </Chip>
                 <Chip
                     showSelectedOverlay
                     selected={active == ListTabs.CLOSE}
                     onPress={() => setActive(ListTabs.CLOSE)}
-                    style={{flex: 1}}>
+                    style={{flex: 4}}>
                     Nearby
                 </Chip>
-                <Chip
-                    showSelectedOverlay
-                    selected={active == ListTabs.ALL}
-                    onPress={() => setActive(ListTabs.ALL)}
-                    style={{flex: 1}}>
-                    All Feed
-                </Chip>
+                <IconButton
+                    onPress={() => {}}
+                    icon="add"
+                    style={{flex: 1}} />
             </View>
             <FlatList
                 data={mockedData}
@@ -75,7 +76,7 @@ function FeedCard(item, router) {
 
 // enum for pages
 const ListTabs = Object.freeze({
-    TOP: 1,
+    TOP: 1, // we aren't using TOP right now.
     CLOSE: 2,
     ALL: 3,
 })
