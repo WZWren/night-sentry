@@ -32,7 +32,7 @@ export default function DashboardPage() {
                 </Chip>
                 <IconButton
                     onPress={() => {}}
-                    icon="add"
+                    icon="newspaper-plus"
                     style={{flex: 1}} />
             </View>
             <FlatList
@@ -46,10 +46,14 @@ export default function DashboardPage() {
 function FeedCard(item, router) {
     const handleReadMore = () => {
         router.push({
-            pathname: '/focusedfeed',
+            pathname: '/dashboard/focusedfeed',
             params: {
                 thread_id: item.id,
                 title: item.title,
+                desc: item.desc,
+                timestamp: item.created_at,
+                image: item.image,
+                coords: JSON.stringify(item.coords)
             }
         })
     };

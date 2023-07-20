@@ -46,7 +46,7 @@ export default function DrawerRoot() {
                     swipeEnabled: !toggleDrawer
                 }}/>
             <Drawer.Screen
-                name="(feed)/dashboard"
+                name="dashboard/index"
                 options={{
                     drawerLabel: "NIGHTSENTRY Feed",
                     title: "Newsfeed for this Area",
@@ -59,7 +59,7 @@ export default function DrawerRoot() {
                     drawerItemStyle: { display: 'none' }
                 }}/>
             <Drawer.Screen
-                name="(feed)/focusedfeed"
+                name="dashboard/focusedfeed"
                 options={{
                     title,
                     drawerItemStyle: { display: 'none' }
