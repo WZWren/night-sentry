@@ -4,42 +4,104 @@ import { View, Image, ScrollView } from "react-native";
 import { Text, Button, TextInput } from "react-native-paper";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from "expo-file-system";
+import { decode } from 'base64-arraybuffer';
+import { useSnackbar } from "../../../contexts/snackbar";
+import { supabase } from "../../../lib/supabase";
 import { viewStyle } from "../../../ui/style";
 
-export default function NewPostPage() {
-    const router = useRouter();
-    const mapViewRef = useRef(null);
-    const [ image, setImage ] = useState(null);
-    const [ coord, setCoord ] = useState(null);
+const pickImage = async (setImage) => {
+    // WARNING: On iOS, ImagePicker needs MediaLibrary Permissions to call this function.
+    let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+    });
 
-    const pickImage = async () => {
-        // WARNING: On iOS, ImagePicker needs MediaLibrary Permissions to call this function.
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.All,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
-
-        if (!result.canceled) {
-            setImage(result.assets[0].uri);
-        }
+    if (!result.canceled) {
+        setImage(result.assets[0].uri);
     }
+}
+
+const uploadFile = async (data, hooks) => {
+    if (data.title.replace(/\s/g, '') == "") {
+        hooks.setMessage("You need to put a valid title!");
+        return;
+    } else if (data.body.replace(/\s/g, '') == "") {
+        hooks.setMessage("You need to put a valid description!");
+        return;
+    } else if (data.coords == null) {
+        hooks.setMessage("You must mark a location!");
+        return;
+    }
+
+    const { data: insertData, error: insertError } = await supabase.from("forum").insert({
+        title: data.title.trim(),
+        desc: data.body.trim(),
+        coords: data.coords,
+        has_image: data.image !== null
+    }).select();
+
+    if (insertError) {
+        hooks.setMessage("Error creating post: " + insertError.message)
+        return;
+    }
+    
+    if (data.image == null) {
+        hooks.setMessage("Forum post created!");
+        hooks.discardChanges();
+        return;
+    }
+
+    // infer the filetype from URI
+    const splitURIByDot = data.image.split('.');
+    const filetype = splitURIByDot[splitURIByDot.length - 1];
+
+    const imageToUpload = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+
+    const { data: uploadData, error: uploadError } = await supabase.storage.from("forum-image")
+        .upload(`${insertData[0].image}.${filetype}`, decode(imageToUpload), {
+            contentType: `image/${filetype}`
+        });
+    if (uploadError) {
+        hooks.setMessage("Failed to upload image: " + uploadError.message);
+        return;
+    }
+    hooks.setMessage(uploadData);
+    hooks.discardChanges();
+    return;
+}
+
+export default function NewPostPage() {
+    const mapViewRef = useRef(null);
+    const router = useRouter();
+    const { setMessage } = useSnackbar();
+    const [ title, setTitle ] = useState("");
+    const [ body, setBody ] = useState("");
+    const [ image, setImage ] = useState(null);
+    const [ coords, setCoords ] = useState(null);
 
     const getCoords = (event) => {
-        setCoord(event.nativeEvent.coordinate);
+        setCoords(event.nativeEvent.coordinate);
     }
-
+    
     const discardChanges = () => {
         router.push("/dashboard");
     }
+
+    // prepackage the hooks to curry into uploadFile.
+    const data = { title, body, image, coords };
+    const hooks = { discardChanges, setMessage };
 
     // on leaving the screen, cleanup the hooks.
     useFocusEffect(
         useCallback(() => {
             return () => {
+                setTitle("");
+                setBody("");
                 setImage(null);
-                setCoord(null);
+                setCoords(null);
             }
         }, [])
     );
@@ -52,8 +114,8 @@ export default function NewPostPage() {
                         autoCorrect
                         mode="outlined"
                         autoCapitalize="sentences"
-                        // value={email}
-                        // onChangeText={setEmail}
+                        value={title}
+                        onChangeText={setTitle}
                         label="Title"
                         placeholder="Type your title here..."
                         style={{ width: "100%" }} />
@@ -63,8 +125,8 @@ export default function NewPostPage() {
                         numberOfLines={6}
                         mode="outlined"
                         autoCapitalize="sentences"
-                        // value={email}
-                        // onChangeText={setEmail}
+                        value={body}
+                        onChangeText={setBody}
                         label="Body"
                         placeholder="Type your description here..."
                         style={{ width: "100%" }} />
@@ -81,12 +143,12 @@ export default function NewPostPage() {
                             }}
                             style={{ width: 340, height: 200 }}
                             onLongPress={getCoords} >
-                            { coord && <Marker
-                                coordinate={ coord }
+                            { coords && <Marker
+                                coordinate={ coords }
                                 title={"Location of Incident"}/> }
                         </MapView>
                     <Text variant="headlineSmall">Attach an image:</Text>
-                    <Button onPress={pickImage}>Select Image</Button>
+                    <Button onPress={() => pickImage(setImage)}>Select Image</Button>
                     {image && <Image source={{ uri: image }} style={{ width: 240, height: 180 }} />}
                 </ScrollView>
             </View>
@@ -94,7 +156,7 @@ export default function NewPostPage() {
                 <Button mode="contained-tonal" onPress={discardChanges}>
                     Discard Changes
                 </Button>
-                <Button mode="contained">
+                <Button mode="contained" onPress={() => uploadFile(data, hooks)}>
                     Submit
                 </Button>
             </View>
