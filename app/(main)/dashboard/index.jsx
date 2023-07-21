@@ -1,21 +1,57 @@
 import { View, FlatList, Image } from "react-native";
-import { Text, Chip, Card, IconButton } from "react-native-paper";
+import { Text, Chip, Card, IconButton, ActivityIndicator } from "react-native-paper";
 import { viewStyle } from "../../../ui/style";
-import { useState } from "react";
-import { useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
 import { epochToDate } from "../../../lib/utils";
+import { supabase } from "../../../lib/supabase";
 
 export default function DashboardPage() {
     const router = useRouter();
     const [ active, setActive ] = useState(ListTabs.ALL);
+    const [ refresh, setRefresh ] = useState(true);
+    const [ data, setData ] = useState([]);
+
+    useEffect(() => {
+        if (refresh) {
+            (async () => {
+                const { data, error } = await supabase.from("forum").select();
+                if (error) {
+                    console.log(error.message);
+                } else {
+                    setData(data);
+                }
+                setRefresh(false);
+            })();
+        }
+    }, [refresh])
+
+    useEffect(() => {
+        supabase.channel("newsfeed").on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'forum',
+            filter: 'has_image=eq.false'
+        }, (payload) => {
+            setData((oldArray) => [...oldArray, payload.new]);
+        }).on('postgres_changes', {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'forum'
+        }, (payload) => {
+            setData((oldArray) => [...oldArray, payload.new]);
+        }).subscribe();
+    }, [])
 
     return (
         <View style={viewStyle.colContainerStart}>
             <View style={viewStyle.rowViewCenter}>
-                <IconButton
-                    onPress={() => {}}
-                    icon="reload"
-                    style={{flex: 1}} />
+                { refresh
+                    ? <ActivityIndicator style={{flex: 1}}/>
+                    : <IconButton
+                        onPress={() => setRefresh(true)}
+                        icon="reload"
+                        style={{flex: 1}} /> }
                 <Chip
                     showSelectedOverlay
                     selected={active == ListTabs.ALL}
@@ -24,6 +60,7 @@ export default function DashboardPage() {
                     All Feed
                 </Chip>
                 <Chip
+                    disabled
                     showSelectedOverlay
                     selected={active == ListTabs.CLOSE}
                     onPress={() => setActive(ListTabs.CLOSE)}
@@ -36,7 +73,7 @@ export default function DashboardPage() {
                     style={{flex: 1}} />
             </View>
             <FlatList
-                data={mockedData}
+                data={data}
                 renderItem={({item}) => FeedCard(item, router)}
                 style={{ width: "90%" }}/>
         </View>
@@ -44,6 +81,10 @@ export default function DashboardPage() {
 }
 
 function FeedCard(item, router) {
+    const imageUrl = item.image !== null
+        ? supabase.storage.from("forum-image").getPublicUrl(item.image).data.publicUrl
+        : "";
+    
     const handleReadMore = () => {
         router.push({
             pathname: '/dashboard/focusedfeed',
@@ -52,21 +93,21 @@ function FeedCard(item, router) {
                 title: item.title,
                 desc: item.desc,
                 timestamp: item.created_at,
-                image: item.image,
+                image: imageUrl,
                 coords: JSON.stringify(item.coords)
             }
         })
     };
 
     const handleVerify = () => {
-        console.log("Verify button pressed for card with text " + item);
+        console.log("Verify button pressed for card with text " + item.title);
     }
 
     return (
         <Card style={{ margin: 4 }}>
             <Card.Title title={item.title} subtitle={epochToDate(item.created_at)}/>
             <Card.Content style={{ flexDirection: "row", gap: 6 }}>
-                { item.image && <Image style={{ width: 100, height: 100, flex: 1 }} source={{ uri: item.image }} /> }
+                { imageUrl && <Image style={{ width: 100, height: 100, flex: 1 }} source={{ uri: imageUrl }} /> }
                 <Text numberOfLines={6} style={{ flex: 2, flexWrap: 'wrap' }}>{item.desc}</Text>
             </Card.Content>
             <Card.Actions>

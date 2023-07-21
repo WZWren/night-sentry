@@ -46,7 +46,8 @@ const uploadFile = async (data, hooks) => {
     const { data: insertData, error: insertError } = await supabase.from("forum").insert({
         title: data.title.trim(),
         desc: data.body.trim(),
-        coords: data.coords
+        coords: data.coords,
+        has_image: filetype !== null
     }).select();
 
     if (insertError) {
@@ -70,7 +71,7 @@ const uploadFile = async (data, hooks) => {
         hooks.setMessage("Failed to upload image: " + uploadError.message);
         return;
     }
-    console.log(uploadData);
+    hooks.setMessage("Forum post created with image!");
     hooks.discardChanges();
     return;
 }

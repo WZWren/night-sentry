@@ -11,7 +11,6 @@ export default function FocusedFeedPage() {
     const router = useRouter();
     const { thread_id, title, desc, timestamp, image, coords } = useLocalSearchParams();
     const coordJSON = JSON.parse(coords);
-    console.log(coordJSON);
 
     return (
         <View style={{ ...viewStyle.colContainerStart, paddingHorizontal: 12 }}>
@@ -19,7 +18,7 @@ export default function FocusedFeedPage() {
                 <ScrollView contentContainerStyle={{ alignItems: "center", flexGrow: 1, rowGap: 4, paddingHorizontal: 8 }}>
                     <Text variant="headlineSmall" style={{ textAlign: "justify", flexWrap: "wrap" }}>{`${thread_id}: ${title}`}</Text>
                     { image && <Image style={{ width: "80%", maxHeight: "30%", minHeight: 240 }} source={{ uri: image }} /> }
-                    <Text variant="labelLarge">{epochToDate(Number(timestamp))}</Text>
+                    <Text variant="labelLarge">{epochToDate(new Date(timestamp).getTime())}</Text>
                     <Text variant="bodyMedium" style={{ textAlign: "justify", flexWrap: "wrap" }}>{desc}</Text>
                     <Text variant="headlineSmall" style={{ textAlign: "justify" }}>Location on Map</Text>
                     <MapView
@@ -34,7 +33,7 @@ export default function FocusedFeedPage() {
                         }}
                         style={{ width: 340, height: 200 }}>
                         <Marker
-                            coordinate={{ latitude: 1.359, longitude: 103.808 }}
+                            coordinate={coordJSON}
                             title={"Location of Incident"}/>
                     </MapView>
                 </ScrollView>
