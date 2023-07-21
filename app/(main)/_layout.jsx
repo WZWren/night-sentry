@@ -35,7 +35,7 @@ export default function DrawerRoot() {
                 name="alert"
                 options={{
                     drawerLabel: "Alert Dashboard",
-                    title: "Distress Signal",
+                    title: "Send a Distress Signal",
                     swipeEnabled: !toggleDrawer
                 }}/>
             <Drawer.Screen
@@ -46,9 +46,28 @@ export default function DrawerRoot() {
                     swipeEnabled: !toggleDrawer
                 }}/>
             <Drawer.Screen
+                name="dashboard/index"
+                options={{
+                    drawerLabel: "NIGHTSENTRY Feed",
+                    title: "Newsfeed for this Area",
+                    swipeEnabled: !toggleDrawer
+                }}/>
+            <Drawer.Screen
                 name="details"
                 options={{
                     title,
+                    drawerItemStyle: { display: 'none' }
+                }}/>
+            <Drawer.Screen
+                name="dashboard/focusedfeed"
+                options={{
+                    title,
+                    drawerItemStyle: { display: 'none' }
+                }}/>
+            <Drawer.Screen
+                name="dashboard/newpost"
+                options={{
+                    title: "Submit a New Feed",
                     drawerItemStyle: { display: 'none' }
                 }}/>
         </Drawer>

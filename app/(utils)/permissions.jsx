@@ -109,6 +109,8 @@ export default function PermissionsPage() {
     const { permissionStatus: notifPerms, setPermissionStatus: setNotifPerms } = useNotif();
     const { permissionStatus: locationPerms, setPermissionStatus: setLocationPerms } = useLocation();
 
+    console.log("In permissions page...");
+
     useEffect(() => {
         (async () => {
             const firstLaunch = await checkIfFirstLaunch();
