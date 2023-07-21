@@ -21,7 +21,11 @@ export function SnackbarProvider({ children }) {
             <Snackbar
                 visible={message}
                 onDismiss={handleDismiss}
-                duration={10000}>
+                duration={10000}
+                action={{
+                    label: "Close",
+                    onPress: handleDismiss
+                }}>
                 {message}
             </Snackbar>
         </SnackbarContext.Provider>
