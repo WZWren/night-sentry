@@ -79,7 +79,7 @@ it("should render properly", async () => {
 it("should attempt to send a message using Supabase REST protocol", async () => {
     const renderPage = render(<AlertPage />);
     const statusMsg = await renderPage.findByTestId("status_msg");
-    expect(statusMsg.children[0]).toBe("Awaiting input...");
+    expect(statusMsg.children[0]).toBe("Send alert to your registered close contacts.");
 
     const distressBtn = await renderPage.findByText("Distress Signal");
     fireEvent.press(distressBtn);

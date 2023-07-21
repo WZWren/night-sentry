@@ -15,7 +15,8 @@ export default function DashboardPage() {
     useEffect(() => {
         if (refresh) {
             (async () => {
-                const { data, error } = await supabase.from("forum").select();
+                const { data, error } = await supabase.from("forum")
+                    .select().order('id', { ascending: false });
                 if (error) {
                     console.log(error.message);
                 } else {
@@ -33,13 +34,13 @@ export default function DashboardPage() {
             table: 'forum',
             filter: 'has_image=eq.false'
         }, (payload) => {
-            setData((oldArray) => [...oldArray, payload.new]);
+            setData((oldArray) => [payload.new, ...oldArray]);
         }).on('postgres_changes', {
             event: 'UPDATE',
             schema: 'public',
             table: 'forum'
         }, (payload) => {
-            setData((oldArray) => [...oldArray, payload.new]);
+            setData((oldArray) => [payload.new, ...oldArray]);
         }).subscribe();
     }, [])
 

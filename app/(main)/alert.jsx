@@ -17,7 +17,7 @@ export default function AlertPage() {
     const { loggedIn } = useAuth();
     const { location } = useLocation();
     const { startRecording, stopRecording, recording } = useRecorder();
-    const [ statusMessage, setMessage ] = useState("Awaiting input...");
+    const [ statusMessage, setMessage ] = useState("Send alert to your registered close contacts.");
     const [ loading, setLoading ] = useState(false);
 
     const handleDistress = async () => {
@@ -32,9 +32,15 @@ export default function AlertPage() {
 
     return (
         <View style={viewStyle.colContainer}>
-            <View style={{ minHeight: 40 }}>
-                {!loading && <Text variant="headlineSmall" testID="status_msg">{statusMessage}</Text>}
-                {loading && <ActivityIndicator/>}
+            <View style={{ minHeight: 40, width: "80%" }}>
+                {loading
+                ? <ActivityIndicator/>
+                : <Text
+                    variant="headlineSmall"
+                    testID="status_msg"
+                    style={{ textAlign: "center" }}>
+                    {statusMessage}
+                </Text>}
             </View>
             <Button
                 buttonColor="#101010"
@@ -64,6 +70,7 @@ export default function AlertPage() {
                 </View>
                 <View style={{flex: 1}} />
             </View>
+            <Text variant="headlineSmall">You can send an alert from a homescreen widget too.</Text>
         </View>
     );
 }

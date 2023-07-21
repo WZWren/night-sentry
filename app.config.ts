@@ -10,10 +10,10 @@ const widgetConfig: WithAndroidWidgetsParams = {
     widgets: [
         {
             name: 'Alert', // This name will be the **name** with which we will reference our widget.
-            label: 'My Alert Widget', // Label shown in the widget picker
+            label: 'Alert Widget', // Label shown in the widget picker
             minWidth: '320dp',
             minHeight: '120dp',
-            description: 'This is my first widget', // Description shown in the widget picker
+            description: 'Send a distress signal from the homescreen. Requires an active login.', // Description shown in the widget picker
             previewImage: './assets/widget-preview/alert.png', // Path to widget preview image
             
             // How often, in milliseconds, that this AppWidget wants to be updated.
@@ -30,7 +30,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     name: 'night-sentry',
     scheme: 'night-sentry',
     slug: 'night-sentry',
-    version: '1.0.1',
+    version: '1.1.0',
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'light',

@@ -15,6 +15,7 @@ exports[`should render properly 1`] = `
     style={
       {
         "minHeight": 40,
+        "width": "80%",
       }
     }
   >
@@ -36,13 +37,15 @@ exports[`should render properly 1`] = `
               "letterSpacing": 0,
               "lineHeight": 32,
             },
-            undefined,
+            {
+              "textAlign": "center",
+            },
           ],
         ]
       }
       testID="status_msg"
     >
-      Awaiting input...
+      Send alert to your registered close contacts.
     </Text>
   </View>
   <View
@@ -432,5 +435,30 @@ exports[`should render properly 1`] = `
       }
     />
   </View>
+  <Text
+    style={
+      [
+        {
+          "textAlign": "left",
+        },
+        {
+          "color": "rgba(28, 27, 31, 1)",
+          "writingDirection": "ltr",
+        },
+        [
+          {
+            "fontFamily": "System",
+            "fontSize": 24,
+            "fontWeight": "400",
+            "letterSpacing": 0,
+            "lineHeight": 32,
+          },
+          undefined,
+        ],
+      ]
+    }
+  >
+    You can send an alert from a homescreen widget too.
+  </Text>
 </View>
 `;
