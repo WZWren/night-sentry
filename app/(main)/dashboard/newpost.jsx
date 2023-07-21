@@ -36,11 +36,17 @@ const uploadFile = async (data, hooks) => {
         return;
     }
 
+    const filetype = checkImageFiletype(data.image);
+
+    if (filetype == "invalid") {
+        hooks.setMessage("Uploaded images should be of JPEG/PNG formats!");
+        return;
+    }
+
     const { data: insertData, error: insertError } = await supabase.from("forum").insert({
         title: data.title.trim(),
         desc: data.body.trim(),
-        coords: data.coords,
-        has_image: data.image !== null
+        coords: data.coords
     }).select();
 
     if (insertError) {
@@ -48,27 +54,23 @@ const uploadFile = async (data, hooks) => {
         return;
     }
     
-    if (data.image == null) {
+    if (filetype == null) {
         hooks.setMessage("Forum post created!");
         hooks.discardChanges();
         return;
     }
 
-    // infer the filetype from URI
-    const splitURIByDot = data.image.split('.');
-    const filetype = splitURIByDot[splitURIByDot.length - 1];
-
-    const imageToUpload = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+    const imageToUpload = await FileSystem.readAsStringAsync(data.image, { encoding: FileSystem.EncodingType.Base64 });
 
     const { data: uploadData, error: uploadError } = await supabase.storage.from("forum-image")
-        .upload(`${insertData[0].image}.${filetype}`, decode(imageToUpload), {
+        .upload(`${insertData[0].id}.${filetype}`, decode(imageToUpload), {
             contentType: `image/${filetype}`
         });
     if (uploadError) {
         hooks.setMessage("Failed to upload image: " + uploadError.message);
         return;
     }
-    hooks.setMessage(uploadData);
+    console.log(uploadData);
     hooks.discardChanges();
     return;
 }
@@ -162,4 +164,19 @@ export default function NewPostPage() {
             </View>
         </View>
     );
+}
+
+function checkImageFiletype(uri) {
+    if (uri == null) {
+        return null;
+    }
+    // infer the filetype from URI
+    const splitURIByDot = uri.split('.');
+    const filetype = splitURIByDot[splitURIByDot.length - 1];
+    const regExp = /^((jp(e?g))|(png))$/i;
+
+    if (filetype.match(regExp) == null) {
+        return "invalid";
+    }
+    return filetype;
 }
