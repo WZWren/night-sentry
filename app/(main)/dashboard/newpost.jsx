@@ -43,6 +43,8 @@ const uploadFile = async (data, hooks) => {
         return;
     }
 
+    hooks.setRefresh(true);
+
     const { data: insertData, error: insertError } = await supabase.from("forum").insert({
         title: data.title.trim(),
         desc: data.body.trim(),
@@ -51,27 +53,31 @@ const uploadFile = async (data, hooks) => {
     }).select();
 
     if (insertError) {
-        hooks.setMessage("Error creating post: " + insertError.message)
+        hooks.setMessage("Error creating post: " + insertError.message);
+        hooks.setRefresh(false);
         return;
     }
     
     if (filetype == null) {
         hooks.setMessage("Forum post created!");
+        hooks.setRefresh(false);
         hooks.discardChanges();
         return;
     }
 
     const imageToUpload = await FileSystem.readAsStringAsync(data.image, { encoding: FileSystem.EncodingType.Base64 });
 
-    const { data: uploadData, error: uploadError } = await supabase.storage.from("forum-image")
+    const { error: uploadError } = await supabase.storage.from("forum-image")
         .upload(`${insertData[0].id}.${filetype}`, decode(imageToUpload), {
             contentType: `image/${filetype}`
         });
     if (uploadError) {
         hooks.setMessage("Failed to upload image: " + uploadError.message);
+        hooks.setRefresh(false);
         return;
     }
     hooks.setMessage("Forum post created with image!");
+    hooks.setRefresh(false);
     hooks.discardChanges();
     return;
 }
@@ -84,6 +90,7 @@ export default function NewPostPage() {
     const [ body, setBody ] = useState("");
     const [ image, setImage ] = useState(null);
     const [ coords, setCoords ] = useState(null);
+    const [ refresh, setRefresh ] = useState(false);
 
     const getCoords = (event) => {
         setCoords(event.nativeEvent.coordinate);
@@ -95,7 +102,7 @@ export default function NewPostPage() {
 
     // prepackage the hooks to curry into uploadFile.
     const data = { title, body, image, coords };
-    const hooks = { discardChanges, setMessage };
+    const hooks = { discardChanges, setMessage, setRefresh };
 
     // on leaving the screen, cleanup the hooks.
     useFocusEffect(
@@ -105,6 +112,7 @@ export default function NewPostPage() {
                 setBody("");
                 setImage(null);
                 setCoords(null);
+                setRefresh(false);
             }
         }, [])
     );
@@ -114,6 +122,7 @@ export default function NewPostPage() {
             <View style={{ flex: 10 }}>
                 <ScrollView contentContainerStyle={{ alignItems: "center", rowGap: 4, width: "100%" }}>
                     <TextInput
+                        disabled={refresh}
                         autoCorrect
                         mode="outlined"
                         autoCapitalize="sentences"
@@ -123,6 +132,7 @@ export default function NewPostPage() {
                         placeholder="Type your title here..."
                         style={{ width: "100%" }} />
                     <TextInput
+                        disabled={refresh}
                         autoCorrect
                         multiline
                         numberOfLines={6}
@@ -151,15 +161,15 @@ export default function NewPostPage() {
                                 title={"Location of Incident"}/> }
                         </MapView>
                     <Text variant="headlineSmall">Attach an image:</Text>
-                    <Button onPress={() => pickImage(setImage)}>Select Image</Button>
+                    <Button disabled={refresh} onPress={() => pickImage(setImage)}>Select Image</Button>
                     {image && <Image source={{ uri: image }} style={{ width: 240, height: 180 }} />}
                 </ScrollView>
             </View>
             <View style={{ flexDirection: "row", columnGap: 12, alignItems: "center", flex: 1 }}>
-                <Button mode="contained-tonal" onPress={discardChanges}>
+                <Button disabled={refresh} mode="contained-tonal" onPress={discardChanges}>
                     Discard Changes
                 </Button>
-                <Button mode="contained" onPress={() => uploadFile(data, hooks)}>
+                <Button disabled={refresh} mode="contained" onPress={() => uploadFile(data, hooks)}>
                     Submit
                 </Button>
             </View>
