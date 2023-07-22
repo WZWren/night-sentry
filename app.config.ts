@@ -6,7 +6,6 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const widgetConfig: WithAndroidWidgetsParams = {
-    // Paths to all custom fonts used in all widgets
     widgets: [
         {
             name: 'Alert', // This name will be the **name** with which we will reference our widget.
@@ -22,6 +21,15 @@ const widgetConfig: WithAndroidWidgetsParams = {
             // Minimum is 1800000 (30 minutes == 30 * 60 * 1000).
             updatePeriodMillis: 1800000,
         },
+        {
+            name: 'Simplified',
+            label: 'Simplified Alert Widget',
+            minWidth: '256dp',
+            minHeight: '120dp',
+            description: 'A simplified workaround version of the original widget. Use this if the normal version is cropped.',
+            previewImage: './assets/widget-preview/simplified.png',
+            updatePeriodMillis: 1800000,
+        },
     ],
 };
 
@@ -30,7 +38,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     name: 'night-sentry',
     scheme: 'night-sentry',
     slug: 'night-sentry',
-    version: '1.1.0',
+    version: '1.1.1',
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'light',

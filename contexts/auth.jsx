@@ -49,13 +49,16 @@ export function AuthProvider({ children }) {
     const [loggedIn, setLoggedIn] = useState(null);
     console.log("AuthProvider loading...");
 
-    useProtectedRoute(loggedIn);
-
     // this sets up the useEffect hooks to redirect users to the correct page.
     useEffect(() => {
         const { data } = supabase.auth.onAuthStateChange((event, session) => {
             console.log("User changed! " + event);
-            if (event === "SIGNED_IN") {
+            if (event === "INITIAL_SESSION") {
+                if (session) {
+                    setLoggedIn(session.user);
+                    fetchPublishers(session.user, setDistress);
+                }
+            } else if (event === "SIGNED_IN") {
                 setLoggedIn(session.user);
                 fetchPublishers(session.user, setDistress);
             } else if (event === "SIGNED_OUT") {
@@ -65,6 +68,9 @@ export function AuthProvider({ children }) {
         })
         return () => data.subscription.unsubscribe();
     }, [setDistress]);
+
+    useProtectedRoute(loggedIn);
+
     // setDistress is a React hook and should never change - this is here due to exhaustive deps.
 
     return (

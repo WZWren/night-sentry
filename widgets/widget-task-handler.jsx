@@ -1,6 +1,7 @@
 import React from 'react';
 import "react-native-url-polyfill/auto";
 import { AlertWidget } from './widget/AlertWidget';
+import { SimplifiedWidget } from './widget/SimplifiedWidget';
 import * as Location from "expo-location";
 import { createClient } from '@supabase/supabase-js';
 import { epochToDate } from '../lib/utils';
@@ -10,7 +11,8 @@ const URL = process.env.PROJECT_URL;
 const KEY = process.env.PROJECT_KEY;
 
 const nameToWidget = {
-    Alert: AlertWidget
+    Alert: AlertWidget,
+    Simplified: SimplifiedWidget
 };
 
 export async function widgetTaskHandler(props) {
@@ -20,13 +22,22 @@ export async function widgetTaskHandler(props) {
 
     switch (props.widgetAction) {
         case 'WIDGET_ADDED':
-            props.renderWidget(
-                <Widget
-                    {...widgetInfo}
-                    timestamp={"No recent alerts sent from widget."}
-                    isLocked={true}
-                />
-            );
+            if (widgetInfo.widgetName === "Alert") {
+                props.renderWidget(
+                    <Widget
+                        timestamp={"No alert sent yet!"}
+                        isLocked={true}
+                        isLoading={false}
+                    />
+                );
+            } else {
+                props.renderWidget(
+                    <Widget
+                        timestamp={"No alert sent."}
+                        isLoading={false}
+                    />
+                );
+            }
             break;
 
         case 'WIDGET_UPDATE':
@@ -42,10 +53,11 @@ export async function widgetTaskHandler(props) {
             break;
 
         case 'WIDGET_CLICK':
+            // we do not need to differentiate the clicks, as the widgets function
+            // the same with or without the additional props.
             if (props.clickAction === "UNLOCK") {
                 props.renderWidget(
                     <Widget
-                        {...widgetInfo}
                         timestamp={props.clickActionData?.timestamp}
                         isLocked={false}
                         isLoading={false}
@@ -54,7 +66,6 @@ export async function widgetTaskHandler(props) {
             } else if (props.clickAction === "LOCK") {
                 props.renderWidget(
                     <Widget
-                        {...widgetInfo}
                         timestamp={props.clickActionData?.timestamp}
                         isLocked={true}
                         isLoading={false}
@@ -65,7 +76,6 @@ export async function widgetTaskHandler(props) {
                 // the handler handles the rest of the widget process.
                 props.renderWidget(
                     <Widget
-                        {...widgetInfo}
                         timestamp={props.clickActionData?.timestamp}
                         isLocked={false}
                         isLoading={true}
@@ -86,23 +96,23 @@ export async function widgetTaskHandler(props) {
                 if (loginSession.data.session == null) {
                     props.renderWidget(
                         <Widget
-                            {...widgetInfo}
-                            timestamp={"Alert failed to send - no active session."}
+                            timestamp={"No Login Session Found."}
                             isLocked={true}
                             isLoading={false}
                         />
                     );
                     break;
                 }
+
                 const { error } = await supabase.from("alerts").insert({
                     user_id: loginSession.data.session.user.id,
                     location: await Location.getLastKnownPositionAsync(),
                 });
+
                 if (error) {
                     props.renderWidget(
                         <Widget
-                            {...widgetInfo}
-                            timestamp={error.message}
+                            timestamp={"No Last Known Location Found."}
                             isLocked={true}
                             isLoading={false}
                         />
@@ -110,8 +120,7 @@ export async function widgetTaskHandler(props) {
                 } else {
                     props.renderWidget(
                         <Widget
-                            {...widgetInfo}
-                            timestamp={epochToDate(Date.now())}
+                            timestamp={`Alert sent at ${epochToDate(Date.now())}`}
                             isLocked={true}
                             isLoading={false}
                         />
