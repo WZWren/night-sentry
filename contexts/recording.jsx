@@ -14,6 +14,18 @@ export function useRecorder() {
     return useContext(RecorderContext);
 }
 
+/**
+ * Parent component that provides the Recorder object as part of its context. <br>
+ * 
+ * The Recorder object should not be unloaded when a user switches screens, so it is placed in a context to
+ * retain it. <br>
+ * 
+ * In React Native, Supabase does not handle direct uploads well, and requires the use of a Base64 Array Buffer
+ * to upload the Audio file.
+ * 
+ * @param {*} children - The Child Components of the RecorderProvider
+ * @returns The LocationContext.Provider component, encapsulating the Recorder object and permission status for the mic.
+ */
 export function RecorderProvider({children}) {
     const { loggedIn } = useAuth();
     const [ recording, setRecording ] = useState(null);

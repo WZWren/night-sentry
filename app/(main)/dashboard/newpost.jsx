@@ -6,10 +6,14 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from "expo-file-system";
 import { decode } from 'base64-arraybuffer';
+
 import { useSnackbar } from "../../../contexts/snackbar";
 import { supabase } from "../../../lib/supabase";
 import { viewStyle } from "../../../ui/style";
 
+/**
+ * onPress handler for the Image Picker.
+ */
 const pickImage = async (setImage) => {
     // WARNING: On iOS, ImagePicker needs MediaLibrary Permissions to call this function.
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -24,7 +28,14 @@ const pickImage = async (setImage) => {
     }
 }
 
+/**
+ * onPress handler for uploading the post to the server.
+ * @param {*} data The packaged object containing all the data variables for a post.
+ * @param {*} hooks The related hook functions to discard, refresh and set error messages.
+ * @returns 
+ */
 const uploadFile = async (data, hooks) => {
+    // verify input
     if (data.title.replace(/\s/g, '') == "") {
         hooks.setMessage("You need to put a valid title!");
         return;
@@ -82,6 +93,12 @@ const uploadFile = async (data, hooks) => {
     return;
 }
 
+/**
+ * The New Post page of the Forum Function. <br>
+ * 
+ * This is a simple post creation page that takes in a title, a body,
+ * a location defined by the user, and optionally an image in the gallery.
+ */
 export default function NewPostPage() {
     const mapViewRef = useRef(null);
     const router = useRouter();
@@ -177,6 +194,11 @@ export default function NewPostPage() {
     );
 }
 
+/**
+ * Abstracted FileType checker for the upload protocol.
+ * @param {*} uri 
+ * @returns null if URI is null, invalid if the URI is not of png/jpeg type, and the filetype otherwise.
+ */
 function checkImageFiletype(uri) {
     if (uri == null) {
         return null;

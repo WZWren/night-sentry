@@ -1,17 +1,35 @@
 import { View, FlatList, Image } from "react-native";
 import { Text, Chip, Card, IconButton, ActivityIndicator } from "react-native-paper";
+import { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+
 import { viewStyle } from "../../../ui/style";
-import { useCallback, useEffect, useState } from "react";
-import { useFocusEffect, useRouter } from "expo-router";
 import { epochToDate } from "../../../lib/utils";
 import { supabase } from "../../../lib/supabase";
 
+/**
+ * The forum dashboard page of the app. <br>
+ * 
+ * Unlike the close contacts page implementation, the dashboard page fetches the
+ * array of forum posts exactly once, and assigns listeners to fetch for changes
+ * to the feed. <br>
+ * 
+ * The page currently displays 2 unimplemented features.
+ * 
+ * TODO: The first one is the verification count, which is a user aggregation count
+ * to sort posts by their credibility.
+ * 
+ * TODO: The second one is the Nearby tab, which automatically sorts the newsfeed by
+ * location context.
+ */
 export default function DashboardPage() {
     const router = useRouter();
     const [ active, setActive ] = useState(ListTabs.ALL);
     const [ refresh, setRefresh ] = useState(true);
     const [ data, setData ] = useState([]);
 
+    // fetch the array of forum posts on initialization of the page, and when the page is
+    // refreshed.
     useEffect(() => {
         if (refresh) {
             (async () => {
@@ -27,6 +45,7 @@ export default function DashboardPage() {
         }
     }, [refresh])
 
+    // subscribe to the changes in the table.
     useEffect(() => {
         supabase.channel("newsfeed").on('postgres_changes', {
             event: 'INSERT',
@@ -81,11 +100,18 @@ export default function DashboardPage() {
     );
 }
 
+/**
+ * The individual card items in the FlatList to render on the Dashboard screen.
+ * @param {*} item Prop item for the item to render as a card.
+ * @param {*} router The Router associated with the Expo Navigation.
+ */
 function FeedCard(item, router) {
+    // preemptively get the URL of the item to let the FocusedFeed page handle it easier.
     const imageUrl = item.image !== null
         ? supabase.storage.from("forum-image").getPublicUrl(item.image).data.publicUrl
         : "";
-    
+
+    // onPress function for the card.
     const handleReadMore = () => {
         router.push({
             pathname: '/dashboard/focusedfeed',
@@ -100,6 +126,7 @@ function FeedCard(item, router) {
         })
     };
 
+    // TODO: onPress function for the verification of the post.
     const handleVerify = () => {
         console.log("Verify button pressed for card with text " + item.title);
     }
@@ -125,44 +152,4 @@ const ListTabs = Object.freeze({
     TOP: 1, // we aren't using TOP right now.
     CLOSE: 2,
     ALL: 3,
-})
-
-// mock data of threads
-const mockedData = [
-    {
-        id: "1",
-        verify_count: 213,
-        title: "Crime Alert for Shoplifting near Orchard Road",
-        desc: "375 arrested since 2014, be on the lookout for suspicious individuals.",
-        created_at: 1492581612000,
-        image: "https://media-cdn.tripadvisor.com/media/photo-s/0a/07/8f/77/orchard-road.jpg",
-        coords: {}
-    },
-    {
-        id: "2",
-        verify_count: 213,
-        title: "Fire in this location here",
-        desc: "Credit to iStockPhoto for the image.",
-        created_at: 1455555555000,
-        image: "https://media.istockphoto.com/id/507185368/photo/fire-in-a-house.jpg?s=1024x1024&w=is&k=20&c=FfOWMzgl70ujTWn-iXENhjcp52VmjA3IxKzVYbLsKoY=",
-        coords: {}
-    },
-    {
-        id: "3",
-        verify_count: 213,
-        title: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-        desc: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-        created_at: 1598781225000,
-        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Cheese_display%2C_Cambridge_MA_-_DSC05391.jpg/1280px-Cheese_display%2C_Cambridge_MA_-_DSC05391.jpg",
-        coords: {}
-    },
-    {
-        id: "4",
-        verify_count: 4,
-        title: "Suspicious people following at night",
-        desc: "Stay safe folks, don't walk around alone at night in this area!",
-        created_at: 1681884012000,
-        image: null,
-        coords: {}
-    },
-];
+});

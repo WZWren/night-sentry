@@ -1,5 +1,3 @@
-// TODO: Move Notifications to its separate context.
-
 import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { Platform } from "react-native";
 import * as Device from 'expo-device';
@@ -27,6 +25,7 @@ Notifications.setNotificationHandler({
     })
 });
 
+// the standard registration of push notifications recommended by the expo-notifications library.
 async function registerForPushNotificationsAsync(setPermissionStatus) {
     let token;
 
@@ -60,6 +59,12 @@ async function registerForPushNotificationsAsync(setPermissionStatus) {
     return token;
 }
 
+/**
+ * Parent component that provides Notification information as part of its context.
+ * 
+ * @param {*} children - The Child Components of the NotificationsProvider
+ * @returns The NotificationsContext.Provider component, encapsulating the Expo Token, notification and permission status.
+ */
 export function NotificationsProvider({ children }) {
     const { stopRecording } = useRecorder();
     const router = useRouter();

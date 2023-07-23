@@ -3,9 +3,16 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { View, Image, ScrollView } from "react-native";
 import { Text, Button } from "react-native-paper";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+
 import { viewStyle } from "../../../ui/style";
 import { epochToDate } from "../../../lib/utils";
 
+/**
+ * The forum post details page of the app. <br>
+ * 
+ * This nests all the elements of a post into a ScrollView. The elements are obtained from the Local Search Parameters
+ * of the Expo Router library, which is passed in to the page from the main forum dashboard.
+ */
 export default function FocusedFeedPage() {
     const mapViewRef = useRef(null);
     const router = useRouter();

@@ -11,6 +11,10 @@ export function useAuth() {
     return useContext(AuthContext);
 }
 
+/**
+ * The recommended way to handle user login by Expo Router.
+ * @param {*} loggedIn The session of the user.
+ */
 function useProtectedRoute(loggedIn) {
     const segments = useSegments();
     const router = useRouter();
@@ -68,10 +72,9 @@ export function AuthProvider({ children }) {
         })
         return () => data.subscription.unsubscribe();
     }, [setDistress]);
+    // setDistress is a React hook and should never change - this is here due to exhaustive deps.
 
     useProtectedRoute(loggedIn);
-
-    // setDistress is a React hook and should never change - this is here due to exhaustive deps.
 
     return (
         <AuthContext.Provider value={{ loggedIn }}>

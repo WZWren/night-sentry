@@ -1,11 +1,11 @@
 import React from 'react';
 import "react-native-url-polyfill/auto";
-import { AlertWidget } from './widget/AlertWidget';
-import { SimplifiedWidget } from './widget/SimplifiedWidget';
 import * as Location from "expo-location";
 import { createClient } from '@supabase/supabase-js';
-import { epochToDate } from '../lib/utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { epochToDate } from '../lib/utils';
+import { AlertWidget } from './widget/AlertWidget';
+import { SimplifiedWidget } from './widget/SimplifiedWidget';
 
 const URL = process.env.PROJECT_URL;
 const KEY = process.env.PROJECT_KEY;
@@ -53,7 +53,7 @@ export async function widgetTaskHandler(props) {
             break;
 
         case 'WIDGET_CLICK':
-            // we do not need to differentiate the clicks, as the widgets function
+            // we do not need to differentiate the clicks between the 2 widgets, as the widgets function
             // the same with or without the additional props.
             if (props.clickAction === "UNLOCK") {
                 props.renderWidget(
@@ -81,8 +81,8 @@ export async function widgetTaskHandler(props) {
                         isLoading={true}
                     />
                 );
-                console.log("Rendered the loading screen.");
 
+                // create the supabase client for the alert
                 const supabase = createClient(URL, KEY, {
                     auth: {
                         autoRefreshToken: false,
@@ -90,8 +90,7 @@ export async function widgetTaskHandler(props) {
                     }
                 });
 
-                console.log("Client created.");
-
+                // check if the supabase client has an active session obtained from AsyncStorage.
                 const loginSession = await supabase.auth.getSession();
                 if (loginSession.data.session == null) {
                     props.renderWidget(

@@ -2,13 +2,13 @@ import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 import { useCallback, useState, useRef, useEffect } from "react";
 import { Button, IconButton, Menu, PaperProvider, Text } from "react-native-paper";
+import Slider from "@react-native-community/slider";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { Audio } from "expo-av";
 
 import { supabase } from "../../lib/supabase";
 import { extractTimestamp } from "../../lib/utils";
 import { viewStyle } from "../../ui/style";
-import Slider from "@react-native-community/slider";
 
 const playbackObject = new Audio.Sound();
 
@@ -42,6 +42,11 @@ async function fetchAudio(id) {
     return data.map((fileObject) => `${id}/${fileObject.name}`);
 }
 
+/**
+ * Gets the signed URL of the Audio File.
+ * @param {*} file The file in the Supabase Storage.
+ * @returns The signed URL to the file.
+ */
 async function getSignedUrl(file) {
     const { data, error } = await supabase.storage
         .from("audio")
@@ -53,6 +58,11 @@ async function getSignedUrl(file) {
     return data.signedUrl;
 }
 
+/**
+ * The Media Player component on the details page.
+ * @param {*} props Contains the boolean flags for unload, playing, buffer, ended, progress and loading,
+ *                  as well as the hooks for setEnded and setLoading.
+ */
 function MediaPlayer(props) {
     async function handleMenuPress(index) {
         props.mediaHooks.setLoading(true);
@@ -159,8 +169,9 @@ function MediaPlayer(props) {
     );
 }
 
-
-
+/**
+ * The Alerts Details Page of the app.
+ */
 export default function AlertDetailsPage() {
     // payload is the query from userlist on the contacts page.
     // payload = { subscriber, info: { first_name, last_name, last_alert, alerts: {location} } }
@@ -219,6 +230,8 @@ export default function AlertDetailsPage() {
         }
     };
 
+    // when the page is focused on by the user, fetch the alert and audio files from the DB.
+    // when the page is navigated away from, reset the audio hooks and unload the audio object.
     useFocusEffect(
         useCallback(() => {
             playbackObject.unloadAsync();
@@ -240,6 +253,7 @@ export default function AlertDetailsPage() {
         playbackObject.setOnPlaybackStatusUpdate(_onPlaybackStatusUpdate);
     }, []);
 
+    // this hook centers the map to the marker.
     useEffect(() => {
         if (alert && mapViewRef.current) {
             mapViewRef.current.animateToRegion({
@@ -249,12 +263,6 @@ export default function AlertDetailsPage() {
             }, 1000);
         }
     }, [alert]);
-
-    useEffect(() => {
-        if (audio.length > 0) {
-            console.log(audio[0]);
-        }
-    }, [audio]);
 
     return (
         <PaperProvider>

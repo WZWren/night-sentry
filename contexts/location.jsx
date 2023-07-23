@@ -9,10 +9,17 @@ export function useLocation() {
     return useContext(LocationContext);
 }
 
+/**
+ * Parent component that provides the location and its permission status as part of its context.
+ * 
+ * @param {*} children - The Child Components of the LocationProvider
+ * @returns The LocationContext.Provider component, encapsulating the user's location and permission status.
+ */
 export function LocationProvider({children}) {
     const [permissionStatus, setPermissionStatus] = useState(null);
     const [location, setLocation] = useState(null);
 
+    // useEffect hook to listen to changes in location every 3 seconds.
     useEffect(() => {
         if (permissionStatus == LocalPermStatus.INIT) {
             (async () => {
