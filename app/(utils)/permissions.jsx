@@ -5,7 +5,6 @@ import { Text, Button, ActivityIndicator } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { viewStyle } from "../../ui/style";
-import { useNotif } from "../../contexts/notif";
 import { useLocation } from "../../contexts/location";
 import { LocalPermStatus } from "../../contexts/permissions-status";
 import { useRecorder } from "../../contexts/recording";
@@ -46,11 +45,6 @@ function AskPermissions(props) {
                 <Text variant="headlineSmall">We need some additional permissions to best serve you.</Text>
             </View>
             <DisplayStatus
-                perms={props.perms.notifPerms}
-                setPerms={props.setPerms.setNotifPerms}
-                type={"Notifications: "}
-                message={notifMessage} />
-            <DisplayStatus
                 perms={props.perms.locationPerms}
                 setPerms={props.setPerms.setLocationPerms}
                 type={"Locations: "}
@@ -68,8 +62,7 @@ function AskPermissions(props) {
                 </View>
                 <Button 
                     disabled={
-                        props.perms.notifPerms != LocalPermStatus.GRANTED
-                            || props.perms.locationPerms != LocalPermStatus.GRANTED
+                        props.perms.locationPerms != LocalPermStatus.GRANTED
                     }
                     onPress={() => props.onPress(false)}
                     style={{flex: 1}}>
@@ -106,7 +99,6 @@ export default function PermissionsPage() {
     const [ firstLaunch, setFirstLaunch ] = useState(true);
     const [ splash, setSplash ] = useState(true);
     const { permissionStatus: micPerms, setPermissionStatus: setMicPerms } = useRecorder();
-    const { permissionStatus: notifPerms, setPermissionStatus: setNotifPerms } = useNotif();
     const { permissionStatus: locationPerms, setPermissionStatus: setLocationPerms } = useLocation();
 
     console.log("In permissions page...");
@@ -120,27 +112,25 @@ export default function PermissionsPage() {
                 return;
             }
             // both notif and location are initialized as null - if one is null the other is also null.
-            if (notifPerms == null || locationPerms == null || micPerms == null) {
+            if (locationPerms == null || micPerms == null) {
                 setMicPerms(LocalPermStatus.INIT);
                 setLocationPerms(LocalPermStatus.INIT);
-                setNotifPerms(LocalPermStatus.INIT);
             }
-            if (notifPerms == LocalPermStatus.UNDETERMINED || notifPerms == LocalPermStatus.DENIED ||
-                locationPerms == LocalPermStatus.UNDETERMINED || locationPerms == LocalPermStatus.DENIED) {
+            if (locationPerms == LocalPermStatus.UNDETERMINED || locationPerms == LocalPermStatus.DENIED) {
                 setSplash(false);
             }
         })();
-    }, [micPerms, notifPerms, locationPerms, setNotifPerms, setLocationPerms, setMicPerms ]);
+    }, [micPerms, locationPerms, setLocationPerms, setMicPerms ]);
 
     // if you are on this page, you came from a login - we only check for notifPerms and locationPerms, and only
     // redirect to the alerts page.
     useEffect(() => {
-        if (notifPerms == LocalPermStatus.GRANTED && locationPerms == LocalPermStatus.GRANTED && !firstLaunch) {
+        if (locationPerms == LocalPermStatus.GRANTED && !firstLaunch) {
             AsyncStorage.setItem("has_launched", "true");
             setSplash(true);
             router.replace('/alert');
         }
-    }, [locationPerms, notifPerms, firstLaunch, router]);
+    }, [locationPerms, firstLaunch, router]);
 
     return (
         <View style={viewStyle.colContainer}>
@@ -148,8 +138,8 @@ export default function PermissionsPage() {
                 splash
                 ? <Splash />
                 : <AskPermissions 
-                    perms={{ notifPerms, locationPerms, micPerms }}
-                    setPerms={{ setNotifPerms, setLocationPerms, setMicPerms }}
+                    perms={{ locationPerms, micPerms }}
+                    setPerms={{ setLocationPerms, setMicPerms }}
                     onPress={setFirstLaunch} />
             }
         </View>

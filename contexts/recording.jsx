@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { Audio } from "expo-av";
 import { decode } from 'base64-arraybuffer';
-import * as Notifications from 'expo-notifications';
 import * as FileSystem from "expo-file-system";
 
 import { useAuth } from "./auth";
@@ -55,15 +54,6 @@ export function RecorderProvider({children}) {
     
             console.log('Starting recording..');
             const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-            await Notifications.scheduleNotificationAsync({
-                content: {
-                    title: "Recording in progress...",
-                    subtitle: "Tap to go to alerts page.",
-                    autoDismiss: true,
-                },
-                identifier: "recording",
-                trigger: null
-            });
             setRecording(recording);
             console.log('Recording started');
         } catch (err) {
@@ -78,7 +68,6 @@ export function RecorderProvider({children}) {
         await Audio.setAudioModeAsync({
           allowsRecordingIOS: false,
         });
-        Notifications.dismissNotificationAsync("recording");
         const uri = recording.getURI();
         console.log('Recording stopped and stored at', uri);
         const file = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
