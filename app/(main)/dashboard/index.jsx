@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 
 import { viewStyle } from "../../../ui/style";
-import { epochToDate } from "../../../lib/utils";
+import { compareDMSGrid, epochToDate, latlngToDMS } from "../../../lib/utils";
 import { supabase } from "../../../lib/supabase";
+import { useLocation } from "../../../contexts/location";
 
 /**
  * The forum dashboard page of the app. <br>
@@ -24,6 +25,8 @@ import { supabase } from "../../../lib/supabase";
  */
 export default function DashboardPage() {
     const router = useRouter();
+    const { location } = useLocation();
+    const coordinates = latlngToDMS(location.coords);
     const [ active, setActive ] = useState(ListTabs.ALL);
     const [ refresh, setRefresh ] = useState(true);
     const [ data, setData ] = useState([]);
@@ -80,7 +83,6 @@ export default function DashboardPage() {
                     All Feed
                 </Chip>
                 <Chip
-                    disabled
                     showSelectedOverlay
                     selected={active == ListTabs.CLOSE}
                     onPress={() => setActive(ListTabs.CLOSE)}
@@ -94,7 +96,7 @@ export default function DashboardPage() {
             </View>
             <FlatList
                 data={data}
-                renderItem={({item}) => FeedCard(item, router)}
+                renderItem={({item}) => FeedCard(item, router, active, coordinates)}
                 style={{ width: "90%" }}/>
         </View>
     );
@@ -105,7 +107,14 @@ export default function DashboardPage() {
  * @param {*} item Prop item for the item to render as a card.
  * @param {*} router The Router associated with the Expo Navigation.
  */
-function FeedCard(item, router) {
+function FeedCard(item, router, active, coordinates) {
+    if (active == ListTabs.CLOSE) {
+        const targetGrid = item.coord_grid;
+        if (!compareDMSGrid(coordinates, targetGrid)) {
+            return (<></>);
+        }
+    }
+
     // preemptively get the URL of the item to let the FocusedFeed page handle it easier.
     const imageUrl = item.image !== null
         ? supabase.storage.from("forum-image").getPublicUrl(item.image).data.publicUrl

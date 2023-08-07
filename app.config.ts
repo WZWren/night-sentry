@@ -38,7 +38,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     name: 'night-sentry',
     scheme: 'night-sentry',
     slug: 'night-sentry',
-    version: '1.1.2',
+    version: '1.2.0',
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'light',
