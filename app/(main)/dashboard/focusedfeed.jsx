@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRef, useCallback } from "react";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { View, Image, ScrollView } from "react-native";
 import { Text, Button } from "react-native-paper";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
@@ -18,6 +18,19 @@ export default function FocusedFeedPage() {
     const router = useRouter();
     const { thread_id, title, desc, timestamp, image, coords } = useLocalSearchParams();
     const coordJSON = JSON.parse(coords);
+
+    // this hook centers the map to the marker.
+    useFocusEffect(
+        useCallback(() => {
+            if (coordJSON && mapViewRef.current) {
+                mapViewRef.current.animateToRegion({
+                    ...coordJSON,
+                    latitudeDelta: 0.1,
+                    longitudeDelta: 0.1
+                }, 1000);
+            }
+        }, [coordJSON])
+    );
 
     return (
         <View style={{ ...viewStyle.colContainerStart, paddingHorizontal: 12 }}>

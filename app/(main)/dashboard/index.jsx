@@ -1,5 +1,5 @@
 import { View, FlatList, Image } from "react-native";
-import { Text, Chip, Card, IconButton, ActivityIndicator } from "react-native-paper";
+import { Text, Chip, Card, IconButton, ActivityIndicator, TouchableRipple } from "react-native-paper";
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 
@@ -19,9 +19,6 @@ import { useLocation } from "../../../contexts/location";
  * 
  * TODO: The first one is the verification count, which is a user aggregation count
  * to sort posts by their credibility.
- * 
- * TODO: The second one is the Nearby tab, which automatically sorts the newsfeed by
- * location context.
  */
 export default function DashboardPage() {
     const router = useRouter();
@@ -142,15 +139,18 @@ function FeedCard(item, router, active, coordinates) {
 
     return (
         <Card style={{ margin: 4 }}>
-            <Card.Title title={item.title} subtitle={epochToDate(item.created_at)}/>
-            <Card.Content style={{ flexDirection: "row", gap: 6 }}>
-                { imageUrl && <Image style={{ width: 100, height: 100, flex: 1 }} source={{ uri: imageUrl }} /> }
-                <Text numberOfLines={6} style={{ flex: 2, flexWrap: 'wrap' }}>{item.desc}</Text>
-            </Card.Content>
+            <TouchableRipple borderless onPress={handleReadMore} rippleColor="#9D79A0" style={{ borderTopLeftRadius: 10, borderTopRightRadius: 10 }}>
+                <View>
+                    <Card.Title title={item.title} subtitle={epochToDate(item.created_at)}/>
+                    <Card.Content style={{ flexDirection: "row", gap: 6 }}>
+                        { imageUrl && <Image style={{ width: 100, height: 100, flex: 1 }} source={{ uri: imageUrl }} /> }
+                        <Text numberOfLines={6} style={{ flex: 2, flexWrap: 'wrap' }}>{item.desc}</Text>
+                    </Card.Content>
+                </View>
+            </TouchableRipple>
             <Card.Actions>
                 <Text variant="labelSmall" style={{ flex: 5 }}>Verification Score: {item.verify_count}</Text>
                 <IconButton onPress={handleVerify} icon="check-decagram" style={{ flex: 1 }}/>
-                <IconButton onPress={handleReadMore} icon="dots-vertical" style={{ flex: 1 }}/>
             </Card.Actions>
         </Card>
     );

@@ -137,7 +137,10 @@ export default function NewPostPage() {
     return (
         <View style={viewStyle.colContainerStart}>
             <View style={{ flex: 10 }}>
-                <ScrollView contentContainerStyle={{ alignItems: "center", rowGap: 4, width: "100%" }}>
+                <ScrollView
+                    contentContainerStyle={{ alignItems: "center", rowGap: 4 }}
+                    style={{ minWidth: "100%" }}
+                    >
                     <TextInput
                         disabled={refresh}
                         autoCorrect
@@ -147,7 +150,8 @@ export default function NewPostPage() {
                         onChangeText={setTitle}
                         label="Title"
                         placeholder="Type your title here..."
-                        style={{ width: "100%" }} />
+                        style={{ width: "85%" }}
+                        />
                     <TextInput
                         disabled={refresh}
                         autoCorrect
@@ -159,7 +163,8 @@ export default function NewPostPage() {
                         onChangeText={setBody}
                         label="Body"
                         placeholder="Type your description here..."
-                        style={{ width: "100%" }} />
+                        style={{ width: "85%" }}
+                        />
                     <Text variant="headlineSmall">Long-Press to Select Location</Text>
                         <MapView
                             ref={mapViewRef}
