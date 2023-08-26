@@ -1,4 +1,10 @@
-﻿**NIGHTSENTRY   ||			   		    Final Level of Achievement: GEMINI**
+﻿**NIGHTSENTRY || Final Level of Achievement: GEMINI**
+
+**Important Notice**
+
+As the project has been concluded, this is unlikely to get further updates/maintenance. The release build may not work, as it is possible the Supabase instance involved with this is disabled due to being on the free plan.
+
+If you wish to run the app, you would need to create a Google Cloud Project and Supabase Instance, and add the respective files/API keys to a local .env file.
 
 **Motivation**
 
